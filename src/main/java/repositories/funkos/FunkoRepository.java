@@ -1,13 +1,11 @@
 package repositories.funkos;
 
-import exceptions.Funko.FunkoNotFoundException;
 import models.Funko;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import repositories.crud.CrudRepository;
 
 import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
 
 public interface FunkoRepository extends CrudRepository<Funko, Long> {
     // Buscar por nombre
@@ -26,7 +24,7 @@ public interface FunkoRepository extends CrudRepository<Funko, Long> {
     Flux<Funko> findAll() throws SQLException;
 
     // Borrar por ID
-    Mono<Boolean> deleteById(Long id) throws SQLException, FunkoNotFoundException, ExecutionException, InterruptedException;
+    Mono<Boolean> deleteById(Long id);
 
     // Borrar todos
     Mono<Void> deleteAll() throws SQLException;

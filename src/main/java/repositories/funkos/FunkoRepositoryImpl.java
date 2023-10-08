@@ -5,9 +5,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import enums.Modelo;
 import exceptions.File.ErrorInFile;
-import exceptions.BD.GetDataFromBD;
-import exceptions.BD.InsertDataToBd;
-import exceptions.Funko.FunkoNotFoundException;
+import io.r2dbc.pool.ConnectionPool;
+import io.r2dbc.spi.Connection;
+import io.r2dbc.spi.Result;
 import models.Funko;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,211 +17,178 @@ import services.database.DataBaseManager;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class FunkoRepositoryImpl implements FunkoRepository {
     private static FunkoRepositoryImpl instance;
     private final Logger logger = LoggerFactory.getLogger(FunkoRepositoryImpl.class);
-    private final DataBaseManager db;
+    private final ConnectionPool connectionFactory;
     private static final Lock lock = new ReentrantLock();
 
     private FunkoRepositoryImpl(DataBaseManager db) {
-        this.db = db;
+        this.connectionFactory = db.getConnectionPool();
     }
 
     public static FunkoRepositoryImpl getInstance(DataBaseManager db) {
+        lock.lock();
         if (instance == null) {
-            lock.lock();
             instance = new FunkoRepositoryImpl(db);
-            lock.unlock();
         }
+        lock.unlock();
         return instance;
     }
 
     @Override
     public Mono<Funko> save(Funko funko) {
-        return CompletableFuture.supplyAsync(() -> {
-            String query = "INSERT INTO FUNKOS (cod, id2, nombre, modelo, precio, fechaLanzamiento) VALUES (?, ?, ?, ?, ?, ?)";
-            try (var connection = db.getConnection();
-                 var stmt = connection.prepareStatement(query)) {
-                stmt.setString(1, funko.getCod().toString());
-                stmt.setLong(2, funko.getId2());
-                stmt.setString(3, funko.getNombre());
-                stmt.setString(4, funko.getModelo().toString());
-                stmt.setDouble(5, funko.getPrecio());
-                stmt.setObject(6, funko.getFechaLanzamiento());
-                stmt.executeUpdate();
-            } catch (SQLException e) {
-                logger.error(e.getMessage());
-                throw new InsertDataToBd("Error al insertar: " + e.getMessage());
-            }
-            logger.debug("Insertando funko: " + funko);
-            return funko;
-        });
+        logger.debug("Insertando funko: " + funko);
+        String query = "INSERT INTO FUNKOS (cod, id2, nombre, modelo, precio, fechaLanzamiento) VALUES (?, ?, ?, ?, ?, ?)";
+
+        return Mono.usingWhen(
+                connectionFactory.create(),
+                connection -> Mono.from(connection.createStatement(query)
+                        .bind(0, funko.getCod().toString())
+                        .bind(1, funko.getId2())
+                        .bind(2, funko.getNombre())
+                        .bind(3, funko.getModelo().toString())
+                        .bind(4, funko.getPrecio())
+                        .bind(5, funko.getFechaLanzamiento())
+                        .execute()
+                ).then(Mono.just(funko)),
+                Connection::close
+        );
     }
 
     @Override
     public Mono<Funko> update(Funko funko) {
-        return CompletableFuture.supplyAsync(() -> {
-            String query = "UPDATE FUNKOS SET nombre = ?, modelo = ?, precio = ?, fechaLanzamiento = ? WHERE id2 = ?";
-            try (var connection = db.getConnection();
-                 var stmt = connection.prepareStatement(query)) {
-                stmt.setString(1, funko.getNombre());
-                stmt.setString(2, funko.getModelo().toString());
-                stmt.setDouble(3, funko.getPrecio());
-                stmt.setDate(4, java.sql.Date.valueOf(funko.getFechaLanzamiento()));
-                stmt.setLong(5, funko.getId2());
-                var res = stmt.executeUpdate();
-                if (res > 0) {
-                    logger.debug("Funko actualizado");
-                } else {
-                    logger.error("No se ha podido guardar el funko");
-                    throw new FunkoNotFoundException("No se ha podido guardar el funko");
-                }
-            } catch (SQLException | FunkoNotFoundException e) {
-                logger.error(e.getMessage());
-                throw new CompletionException(e);
-            }
-            return funko;
-        });
+        logger.debug("Actualizando funko: " + funko);
+        String query = "UPDATE FUNKOS SET nombre = ?, modelo = ?, precio = ?, fechaLanzamiento = ? WHERE id2 = ?";
+        return Mono.usingWhen(
+                connectionFactory.create(),
+                connection -> Mono.from(connection.createStatement(query)
+                        .bind(0, funko.getNombre())
+                        .bind(1, funko.getModelo().toString())
+                        .bind(2, funko.getPrecio())
+                        .bind(3, funko.getFechaLanzamiento())
+                        .bind(4, funko.getId2())
+                        .execute()
+                ).then(Mono.just(funko)),
+                Connection::close
+        );
+
     }
 
     @Override
     public Mono<Funko> findById(Long id) {
-        return CompletableFuture.supplyAsync(() -> {
-            Optional<Funko> optionalFunko = Optional.empty();
-            String query = "SELECT * FROM FUNKOS WHERE id2 = ?";
-            try (var connection = db.getConnection();
-                 var stmt = connection.prepareStatement(query)) {
-                stmt.setLong(1, id);
-                var rs = stmt.executeQuery();
-                if (rs.next()) {
-                    optionalFunko = Optional.of(Funko.builder()
-                            .cod(UUID.fromString(rs.getString("cod")))
-                            .id2(rs.getLong("id2"))
-                            .nombre(rs.getString("nombre"))
-                            .modelo(Modelo.valueOf(rs.getString("modelo")))
-                            .precio(rs.getDouble("precio"))
-                            .fechaLanzamiento(rs.getDate("fechaLanzamiento").toLocalDate())
-                            .build());
-                }
-            } catch (SQLException e) {
-                logger.error(e.getMessage());
-                throw new GetDataFromBD("Error al encontrar por ID: " + e.getMessage());
-            }
-            return optionalFunko;
-        });
+        logger.debug("Buscando funko por ID: " + id);
+        String query = "SELECT * FROM FUNKOS WHERE id2 = ?";
+        return Mono.usingWhen(
+                connectionFactory.create(),
+                connection -> Mono.from(connection.createStatement(query)
+                        .bind(0, id)
+                        .execute()
+                ).flatMap(result -> Mono.from(result.map((fila, datos) ->
+                        Funko.builder()
+                                .id2(fila.get("id2", Long.class))
+                                .cod(UUID.fromString(fila.get("cod", String.class)))
+                                .nombre(fila.get("nombre", String.class))
+                                .modelo(Modelo.valueOf(fila.get("modelo", String.class)))
+                                .precio(fila.get("precio", Double.class))
+                                .fechaLanzamiento(fila.get("fechaLanzamiento", java.time.LocalDate.class))
+                                .build()
+                ))),
+                Connection::close
+        );
     }
 
     @Override
     public Flux<Funko> findAll() {
-        return CompletableFuture.supplyAsync(() -> {
-            List<Funko> lista = new ArrayList<>();
-            String query = "SELECT * FROM FUNKOS";
-            try (var connection = db.getConnection();
-                 var stmt = connection.prepareStatement(query)) {
-                var rs = stmt.executeQuery();
-                while (rs.next()) {
-                    lista.add(Funko.builder()
-                            .cod(UUID.fromString(rs.getString("cod")))
-                            .id2(rs.getLong("id2"))
-                            .nombre(rs.getString("nombre"))
-                            .modelo(Modelo.valueOf(rs.getString("modelo")))
-                            .precio(rs.getDouble("precio"))
-                            .fechaLanzamiento(rs.getDate("fechaLanzamiento").toLocalDate())
-                            .build());
-                }
-            } catch (SQLException e) {
-                logger.error(e.getMessage());
-                throw new GetDataFromBD("Error al encontrar todos: " + e.getMessage());
-            }
-            return lista;
-        });
+        logger.debug("Buscando todos los funkos");
+        String query = "SELECT * FROM FUNKOS";
+        return Flux.usingWhen(
+                connectionFactory.create(),
+                connection -> Flux.from(connection.createStatement(query)
+                        .execute()
+                ).flatMap(result -> result.map((fila, datos) ->
+                        Funko.builder()
+                                .id2(fila.get("id2", Long.class))
+                                .cod(UUID.fromString(fila.get("cod", String.class)))
+                                .nombre(fila.get("nombre", String.class))
+                                .modelo(Modelo.valueOf(fila.get("modelo", String.class)))
+                                .precio(fila.get("precio", Double.class))
+                                .fechaLanzamiento(fila.get("fechaLanzamiento", java.time.LocalDate.class))
+                                .build()
+                )),
+                Connection::close
+        );
     }
 
     @Override
-    public Mono<Funko> deleteById(Long idDelete) throws FunkoNotFoundException, ExecutionException, InterruptedException {
-        Optional<Funko> funko = findById(idDelete).get();
-        System.out.println(funko);
-        if (funko.isPresent()) {
-            throw new FunkoNotFoundException("No se ha encontrado ningún funko con el id: " + idDelete);
-        }
-        return CompletableFuture.supplyAsync(() -> {
-            String query = "DELETE FROM FUNKOS WHERE id2 = ?";
-            try (var connection = db.getConnection();
-                 var stmt = connection.prepareStatement(query)) {
-                stmt.setLong(1, idDelete);
-                stmt.executeUpdate();
-            } catch (SQLException e) {
-                logger.error(e.getMessage());
-                throw new InsertDataToBd("Error al eliminar por ID: " + e.getMessage());
-            }
-            return true;
-        });
+    public Mono<Boolean> deleteById(Long idDelete) {
+        logger.debug("Borrando funko por ID: " + idDelete);
+        String query = "DELETE FROM FUNKOS WHERE id2 = ?";
+        return Mono.usingWhen(
+                connectionFactory.create(),
+                connection -> Mono.from(connection.createStatement(query)
+                                .bind(0, idDelete)
+                                .execute()
+                        ).flatMapMany(Result::getRowsUpdated)
+                        .hasElements(),
+                Connection::close
+        );
 
     }
 
     @Override
     public Mono<Void> deleteAll() {
-        return CompletableFuture.runAsync(() -> {
-            String query = "DELETE FROM FUNKOS";
-            try (var connection = db.getConnection();
-                 var stmt = connection.prepareStatement(query)) {
-                stmt.executeUpdate();
-            } catch (SQLException e) {
-                logger.error(e.getMessage());
-                throw new InsertDataToBd("Error al eliminar todos: " + e.getMessage());
-            }
-        });
+        logger.debug("Borrando todos los funkos");
+        String query = "DELETE FROM FUNKOS";
+        return Mono.usingWhen(
+                connectionFactory.create(),
+                connection -> Mono.from(connection.createStatement(query)
+                        .execute()
+                ).then(),
+                Connection::close
+        );
     }
 
     @Override
     public Flux<Funko> findByNombre(String nombre) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<Funko> lista = new ArrayList<>();
-            String query = "SELECT * FROM FUNKOS WHERE nombre = ?";
-            try (var connection = db.getConnection();
-                 var stmt = connection.prepareStatement(query)) {
-                stmt.setString(1, nombre);
-                var rs = stmt.executeQuery();
-                while (rs.next()) {
-                    lista.add(Funko.builder()
-                            .cod(UUID.fromString(rs.getString("cod")))
-                            .id2(rs.getLong("id2"))
-                            .nombre(rs.getString("nombre"))
-                            .modelo(Modelo.valueOf(rs.getString("modelo")))
-                            .precio(rs.getDouble("precio"))
-                            .fechaLanzamiento(rs.getDate("fechaLanzamiento").toLocalDate())
-                            .build());
-                }
-            } catch (SQLException e) {
-                logger.error(e.getMessage());
-                throw new GetDataFromBD("Error al encontrar por nombre: " + e.getMessage());
-            }
-            return lista;
-        });
+        logger.debug("Buscando funko por nombre: " + nombre);
+        String query = "SELECT * FROM FUNKOS WHERE nombre = ?";
+        return Flux.usingWhen(
+                connectionFactory.create(),
+                connection -> Flux.from(connection.createStatement(query)
+                        .bind(0, "%" + nombre + "%")
+                        .execute()
+                ).flatMap(result -> result.map((fila, datos) ->
+                        Funko.builder()
+                                .id2(fila.get("id2", Long.class))
+                                .cod(UUID.fromString(fila.get("cod", String.class)))
+                                .nombre(fila.get("nombre", String.class))
+                                .modelo(Modelo.valueOf(fila.get("modelo", String.class)))
+                                .precio(fila.get("precio", Double.class))
+                                .fechaLanzamiento(fila.get("fechaLanzamiento", java.time.LocalDate.class))
+                                .build()
+                )),
+                Connection::close
+        );
     }
 
-    public CompletableFuture<Void> exportJson(String ruta) {
-        return CompletableFuture.runAsync(() -> {
+    public Mono<Void> exportJson(String ruta) {
+        logger.debug("Exportando funkos a JSON, ruta: " + ruta);
+
+        return Mono.fromRunnable((() -> {
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(Funko.class, new LocalDateAdapter());
             Gson gson = gsonBuilder.setPrettyPrinting().create();
 
             try (FileWriter writer = new FileWriter(ruta)) {
-                gson.toJson(findAll().get(), writer);
-            } catch (IOException | InterruptedException | ExecutionException e) {
+                gson.toJson(findAll().collectList(), writer);
+            } catch (IOException e) {
                 throw new ErrorInFile("Error al escribir en el archivo JSON: " + e.getMessage());
             }
-        });
+        }));
     }
 }
