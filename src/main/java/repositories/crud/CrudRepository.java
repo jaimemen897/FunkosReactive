@@ -2,6 +2,8 @@ package repositories.crud;
 
 import exceptions.Funko.FunkoNotFoundException;
 import models.Funko;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -11,23 +13,23 @@ import java.util.concurrent.ExecutionException;
 
 public interface CrudRepository<T, ID> {
     // Guardar
-    CompletableFuture<Funko> save(T t) throws SQLException;
+    Mono<T> save(T t) throws SQLException;
 
     // Actualizar
-    CompletableFuture<Funko> update(T t) throws SQLException, FunkoNotFoundException;
+    Mono<T> update(T t) throws SQLException, FunkoNotFoundException;
 
     // Buscar por ID
-    CompletableFuture<Optional<Funko>> findById(ID id) throws SQLException;
+    Mono<T> findById(ID id) throws SQLException;
 
     // Buscar por nombre
-    CompletableFuture<List<Funko>> findByNombre(String nombre) throws SQLException;
+    Flux<T> findByNombre(String nombre) throws SQLException;
 
     // Buscar todos
-    CompletableFuture<List<Funko>> findAll() throws SQLException;
+    Flux<T> findAll() throws SQLException;
 
     // Borrar por ID
-    CompletableFuture<Boolean> deleteById(ID id) throws SQLException, FunkoNotFoundException, ExecutionException, InterruptedException;
+    Mono<Boolean> deleteById(ID id) throws SQLException, FunkoNotFoundException, ExecutionException, InterruptedException;
 
     // Borrar todos
-    CompletableFuture<Void> deleteAll() throws SQLException;
+    Mono<Void> deleteAll() throws SQLException;
 }

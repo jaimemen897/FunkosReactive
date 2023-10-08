@@ -11,6 +11,8 @@ import exceptions.Funko.FunkoNotFoundException;
 import models.Funko;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import services.database.DataBaseManager;
 
 import java.io.FileWriter;
@@ -46,7 +48,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     @Override
-    public CompletableFuture<Funko> save(Funko funko) {
+    public Mono<Funko> save(Funko funko) {
         return CompletableFuture.supplyAsync(() -> {
             String query = "INSERT INTO FUNKOS (cod, id2, nombre, modelo, precio, fechaLanzamiento) VALUES (?, ?, ?, ?, ?, ?)";
             try (var connection = db.getConnection();
@@ -68,7 +70,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     @Override
-    public CompletableFuture<Funko> update(Funko funko) {
+    public Mono<Funko> update(Funko funko) {
         return CompletableFuture.supplyAsync(() -> {
             String query = "UPDATE FUNKOS SET nombre = ?, modelo = ?, precio = ?, fechaLanzamiento = ? WHERE id2 = ?";
             try (var connection = db.getConnection();
@@ -94,7 +96,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     @Override
-    public CompletableFuture<Optional<Funko>> findById(Long id) {
+    public Mono<Funko> findById(Long id) {
         return CompletableFuture.supplyAsync(() -> {
             Optional<Funko> optionalFunko = Optional.empty();
             String query = "SELECT * FROM FUNKOS WHERE id2 = ?";
@@ -121,7 +123,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     @Override
-    public CompletableFuture<List<Funko>> findAll() {
+    public Flux<Funko> findAll() {
         return CompletableFuture.supplyAsync(() -> {
             List<Funko> lista = new ArrayList<>();
             String query = "SELECT * FROM FUNKOS";
@@ -147,7 +149,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     @Override
-    public CompletableFuture<Boolean> deleteById(Long idDelete) throws FunkoNotFoundException, ExecutionException, InterruptedException {
+    public Mono<Funko> deleteById(Long idDelete) throws FunkoNotFoundException, ExecutionException, InterruptedException {
         Optional<Funko> funko = findById(idDelete).get();
         System.out.println(funko);
         if (funko.isPresent()) {
@@ -169,7 +171,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     @Override
-    public CompletableFuture<Void> deleteAll() {
+    public Mono<Void> deleteAll() {
         return CompletableFuture.runAsync(() -> {
             String query = "DELETE FROM FUNKOS";
             try (var connection = db.getConnection();
@@ -183,7 +185,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     @Override
-    public CompletableFuture<List<Funko>> findByNombre(String nombre) {
+    public Flux<Funko> findByNombre(String nombre) {
         return CompletableFuture.supplyAsync(() -> {
             List<Funko> lista = new ArrayList<>();
             String query = "SELECT * FROM FUNKOS WHERE nombre = ?";
