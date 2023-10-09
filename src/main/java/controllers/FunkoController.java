@@ -5,6 +5,8 @@ import exceptions.File.NotFoundFile;
 import lombok.Getter;
 import models.Funko;
 import models.IdGenerator;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import routes.Routes;
 
 import java.io.*;
@@ -32,8 +34,8 @@ public class FunkoController {
         return instance;
     }
 
-    public CompletableFuture<List<Funko>> loadCsv() {
-        return CompletableFuture.supplyAsync(() -> {
+    public Flux<Funko> loadCsv() {
+        return Flux.create(sink -> {
             try (BufferedReader br = new BufferedReader(new FileReader(routes.getRouteFunkosCsv()))) {
                 String line = br.readLine();
                 line = br.readLine();
@@ -48,49 +50,70 @@ public class FunkoController {
 
                     UUID cod = UUID.fromString(split[0].substring(0, 35));
 
-                    funkos.add(Funko.builder()
+                    Funko funko = Funko.builder()
                             .cod(cod)
                             .id2(idGenerator.getAndIncrement())
                             .nombre(split[1])
                             .modelo(Modelo.valueOf(split[2]))
                             .precio(Double.parseDouble(split[3]))
                             .fechaLanzamiento(dia)
-                            .build());
+                            .build();
+
+                    sink.next(funko);
                     line = br.readLine();
                 }
-
+                sink.complete();
             } catch (IOException e) {
-                throw new NotFoundFile("No se ha encontrado el archivo, " + e.getMessage());
+                sink.error(new NotFoundFile("No se ha encontrado el archivo, " + e.getMessage()));
             }
-            return funkos;
         });
     }
 
-    public CompletableFuture<Funko> expensiveFunko() {
-        return CompletableFuture.supplyAsync(() -> funkos.stream().max(Comparator.comparingDouble(Funko::getPrecio)).get());
+    public Mono<Funko> expensiveFunko() {
+        return Flux.defer(() -> Flux.fromIterable(funkos)) // Convierte la lista de funkos en un Flux
+                .collectList() // Recolecta todos los funkos en una lista
+                .flatMap(funkoList -> {
+                    if (funkoList.isEmpty()) {
+                        return Mono.error(new NoSuchElementException("No hay funkos disponibles."));
+                    }
+                    return Mono.just(funkoList.stream()
+                            .max(Comparator.comparingDouble(Funko::getPrecio))
+                            .orElseThrow());
+                });
+    }
+    public Mono<Double> averagePrice() {
+        return Flux.defer(() -> Flux.fromIterable(funkos))
+                .map(Funko::getPrecio)
+                .collect(Collectors.averagingDouble(Double::doubleValue))
+                .defaultIfEmpty(0.0); // Manejar el caso cuando no hay funkos
     }
 
-    public CompletableFuture<Double> averagePrice() {
-        return CompletableFuture.supplyAsync(() -> funkos.stream().mapToDouble(Funko::getPrecio).average().getAsDouble());
+    public Mono<Map<Modelo, List<Funko>>> groupByModelo() {
+        return Flux.defer(() -> Flux.fromIterable(funkos))
+                .collect(Collectors.groupingBy(Funko::getModelo));
     }
 
-    public CompletableFuture<Map<Modelo, List<Funko>>> groupByModelo() {
-        return CompletableFuture.supplyAsync(() -> funkos.stream().collect(Collectors.groupingBy(Funko::getModelo)));
+    public Mono<Map<Modelo, Long>> funkosByModelo() {
+        return Flux.defer(() -> Flux.fromIterable(funkos))
+                .collect(Collectors.groupingBy(Funko::getModelo, Collectors.counting()));
     }
 
-    public CompletableFuture<Map<Modelo, Long>> funkosByModelo() {
-        return CompletableFuture.supplyAsync(() -> funkos.stream().collect(Collectors.groupingBy(Funko::getModelo, Collectors.counting())));
+    public Mono<List<Funko>> funkosIn2023() {
+        return Flux.defer(() -> Flux.fromIterable(funkos))
+                .filter(funko -> funko.getFechaLanzamiento().getYear() == 2023)
+                .collectList();
     }
 
-    public CompletableFuture<List<Funko>> funkosIn2023() {
-        return CompletableFuture.supplyAsync(() -> funkos.stream().filter(funko -> funko.getFechaLanzamiento().getYear() == 2023).collect(Collectors.toList()));
+    public Mono<Double> numberStitch() {
+        return Flux.defer(() -> Flux.fromIterable(funkos))
+                .filter(funko -> funko.getNombre().contains("Stitch"))
+                .count()
+                .map(Double::valueOf);
     }
 
-    public CompletableFuture<Double> numberStitch() {
-        return CompletableFuture.supplyAsync(() -> (double) funkos.stream().filter(funko -> funko.getNombre().contains("Stitch")).count());
-    }
-
-    public CompletableFuture<List<Funko>> funkoStitch() {
-        return CompletableFuture.supplyAsync(() -> funkos.stream().filter(funko -> funko.getNombre().contains("Stitch")).collect(Collectors.toList()));
+    public Mono<List<Funko>> funkoStitch() {
+        return Flux.defer(() -> Flux.fromIterable(funkos))
+                .filter(funko -> funko.getNombre().contains("Stitch"))
+                .collectList();
     }
 }

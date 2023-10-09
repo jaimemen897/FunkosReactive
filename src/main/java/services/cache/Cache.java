@@ -1,13 +1,14 @@
 package services.cache;
 
+import models.Funko;
 import reactor.core.publisher.Mono;
 
 public interface Cache<K, V> {
-    void put(K key, V value);
+    Mono<Void> put(K key, V value);
 
-    V get(K key);
+    Mono<Funko> get(K key);
 
-    void remove(K key);
+    Mono<Void> remove(K key);
 
     void clear();
 

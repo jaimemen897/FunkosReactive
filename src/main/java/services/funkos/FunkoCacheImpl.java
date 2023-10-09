@@ -3,6 +3,8 @@ package services.funkos;
 import models.Funko;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
+
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -36,39 +38,36 @@ public class FunkoCacheImpl implements FunkoCache {
     }
 
     @Override
-    public void put(Long key, Funko value) {
-        lock.lock();
-        try {
-            logger.debug("Añadiendo funko a la cache con id:" + key + " y valor:" + value);
-            cache.put(key, value);
-        } finally {
-            lock.unlock();
-        }
+    public Mono<Void> put(Long key, Funko value) {
+        logger.debug("Guardando funko en la cache con id:" + key);
+        return Mono.fromRunnable(() -> cache.put(key, value));
     }
 
+
     @Override
-    public Funko get(Long key) {
+    public Mono<Funko> get(Long key) {
         lock.lock();
         try {
             logger.debug("Obteniendo funko de la cache con id:" + key);
             if (cache.get(key) == null) {
                 logger.error("No se ha encontrado el funko con id:" + key);
             }
-            return cache.get(key);
+            return Mono.justOrEmpty(cache.get(key));
         } finally {
             lock.unlock();
         }
     }
 
     @Override
-    public void remove(Long key) {
+    public Mono<Void> remove(Long key) {
         lock.lock();
         try {
             logger.debug("Eliminando funko de la cache con id:" + key);
-            cache.remove(key);
+            return Mono.fromRunnable(() -> cache.remove(key));
         } finally {
             lock.unlock();
         }
+
     }
 
     @Override
@@ -85,7 +84,6 @@ public class FunkoCacheImpl implements FunkoCache {
         } finally {
             lock.unlock();
         }
-
     }
 
     @Override

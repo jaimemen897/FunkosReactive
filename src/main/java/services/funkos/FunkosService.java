@@ -3,23 +3,25 @@ package services.funkos;
 import exceptions.Funko.FunkoNotFoundException;
 import exceptions.Funko.FunkoNotStoragedException;
 import models.Funko;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public interface FunkosService {
-    List<Funko> findAll() throws ExecutionException, InterruptedException;
+    Flux<Funko> findAll() throws ExecutionException, InterruptedException;
 
-    List<Funko> findByNombre(String nombre) throws ExecutionException, InterruptedException, FunkoNotFoundException;
+    Flux<Funko> findByNombre(String nombre) throws ExecutionException, InterruptedException, FunkoNotFoundException;
 
-    Optional<Funko> findById(long id) throws ExecutionException, InterruptedException, FunkoNotFoundException;
+    Mono<Funko> findById(long id) throws ExecutionException, InterruptedException, FunkoNotFoundException;
 
-    Funko save(Funko alumno) throws ExecutionException, InterruptedException, FunkoNotStoragedException;
+    Mono<Funko> save(Funko funko) throws ExecutionException, InterruptedException, FunkoNotStoragedException;
 
-    Funko update(Funko alumno) throws ExecutionException, InterruptedException, FunkoNotStoragedException, FunkoNotFoundException;
+    Mono<Funko> update(Funko funko) throws ExecutionException, InterruptedException, FunkoNotStoragedException, FunkoNotFoundException;
 
-    boolean deleteById(long id) throws ExecutionException, InterruptedException, FunkoNotFoundException;
+    Mono<Boolean> deleteById(long id) throws ExecutionException, InterruptedException, FunkoNotFoundException;
 
-    void deleteAll() throws ExecutionException, InterruptedException;
+    Mono<Void> deleteAll() throws ExecutionException, InterruptedException;
 }
