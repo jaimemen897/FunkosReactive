@@ -42,3 +42,5 @@ bin/
 .DS_Store
 .idea
 .idea/
+/database.mv.db
+/database.trace.db
