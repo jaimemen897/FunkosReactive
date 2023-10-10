@@ -6,8 +6,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import repositories.funkos.FunkoRepositoryImpl;
 
-public class FunkosNotificationsImpl implements FunkosNotifications{
-    /*private static FunkoRepositoryImpl INSTANCE = new FunkoRepositoryImpl();
+/*public class FunkosNotificationsImpl implements FunkosNotifications{
+    private static FunkoRepositoryImpl instance = new FunkoRepositoryImpl();
 
     private final Flux<Notificacion<Funko>> funkosNotificationFlux;
     private FluxSink<Notificacion<Funko>> funkosNotification;
@@ -18,10 +18,10 @@ public class FunkosNotificationsImpl implements FunkosNotifications{
     }
 
     public static FunkoRepositoryImpl getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new FunkoRepositoryImpl();
+        if (instance == null) {
+            instance = new FunkoRepositoryImpl();
         }
-        return INSTANCE;
+        return instance;
     }
 
     @Override
@@ -32,5 +32,5 @@ public class FunkosNotificationsImpl implements FunkosNotifications{
     @Override
     public void notify(Notificacion<Funko> notificacion) {
         funkosNotification.next(notificacion);
-    }*/
-}
+    }
+}*/

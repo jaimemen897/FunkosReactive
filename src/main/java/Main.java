@@ -1,18 +1,26 @@
+import controllers.FunkoController;
 import exceptions.File.ErrorInFile;
 import exceptions.File.NotFoundFile;
 import exceptions.Funko.FunkoNotStoragedException;
+import repositories.funkos.FunkoRepositoryImpl;
+import services.database.DataBaseManager;
 
 import java.util.concurrent.ExecutionException;
 
 public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, NotFoundFile, ErrorInFile, FunkoNotStoragedException {
-        /*FunkoController funkoController = FunkoController.getInstance();
+        FunkoController funkoController = FunkoController.getInstance();
         FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(DataBaseManager.getInstance());
-        FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository);
-        Routes routes = Routes.getInstance();
+
+        funkoController.loadCsv().subscribe();
+        funkoController.getFunkos().forEach(System.out::println);
 
 
-        System.out.println("-------------------------- OBTENCION DE DATOS --------------------------");
+        /*FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository);
+        Routes routes = Routes.getInstance();*/
+
+
+        /*System.out.println("-------------------------- OBTENCION DE DATOS --------------------------");
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().get();
