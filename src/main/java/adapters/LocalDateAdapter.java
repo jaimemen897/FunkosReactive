@@ -9,14 +9,7 @@ import models.Funko;
 import java.lang.reflect.Type;
 
 public class LocalDateAdapter implements JsonSerializer<Funko> {
-    /**
-     * Serializa un objeto `Weather` en formato JSON.
-     *
-     * @param weatherType  El objeto `Weather` que se va a serializar.
-     * @param typeOfSrc    El tipo de objeto de origen (puede ser útil en la serialización).
-     * @param context      El contexto de serialización que se utiliza para realizar la serialización.
-     * @return Un elemento JSON que representa el objeto `Weather`.
-     */
+
     @Override
     public JsonElement serialize(Funko funko, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();

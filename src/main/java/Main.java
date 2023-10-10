@@ -1,22 +1,12 @@
-import controllers.FunkoController;
-import enums.Modelo;
 import exceptions.File.ErrorInFile;
 import exceptions.File.NotFoundFile;
 import exceptions.Funko.FunkoNotStoragedException;
-import models.Funko;
-import repositories.funkos.FunkoRepositoryImpl;
-import routes.Routes;
-import services.database.DataBaseManager;
-import services.funkos.FunkosServiceImpl;
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
 
 public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, NotFoundFile, ErrorInFile, FunkoNotStoragedException {
-        FunkoController funkoController = FunkoController.getInstance();
+        /*FunkoController funkoController = FunkoController.getInstance();
         FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(DataBaseManager.getInstance());
         FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository);
         Routes routes = Routes.getInstance();
@@ -74,6 +64,6 @@ public class Main {
 
 
         executorService.shutdown();
-        funkosService.close();
+        funkosService.close();*/
     }
 }
