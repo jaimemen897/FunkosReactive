@@ -1,77 +1,85 @@
 import controllers.FunkoController;
 import exceptions.File.ErrorInFile;
 import exceptions.File.NotFoundFile;
+import exceptions.Funko.FunkoNotFoundException;
 import exceptions.Funko.FunkoNotStoragedException;
 import repositories.funkos.FunkoRepositoryImpl;
 import services.database.DataBaseManager;
+import services.funkos.FunkosNotificationsImpl;
+import services.funkos.FunkosServiceImpl;
 
 import java.util.concurrent.ExecutionException;
 
 public class Main {
-    public static void main(String[] args) throws ExecutionException, InterruptedException, NotFoundFile, ErrorInFile, FunkoNotStoragedException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, NotFoundFile, ErrorInFile, FunkoNotStoragedException, FunkoNotFoundException {
         FunkoController funkoController = FunkoController.getInstance();
-        FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(DataBaseManager.getInstance());
+        DataBaseManager dataBaseManager = DataBaseManager.getInstance();
+        FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(dataBaseManager);
+        FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(
+                funkoRepository,
+                FunkosNotificationsImpl.getInstance()
+        );
 
-        funkoController.loadCsv().subscribe();
-        funkoController.getFunkos().forEach(System.out::println);
+        funkoController.loadCsv().subscribe(System.out::println);
+        funkoController.expensiveFunko().subscribe(
+                funko -> System.out.println("Funko más caro: " + funko),
+                error -> System.out.println("Error: " + error.getMessage())
+        );
+        funkoController.averagePrice().subscribe(
+                average -> System.out.println("Precio medio: " + average),
+                error -> System.out.println("Error: " + error.getMessage())
+        );
 
+        funkoController.groupByModelo().subscribe(
+                funko -> System.out.println("Funkos agrupados por modelo: " + funko),
+                error -> System.out.println("Error: " + error.getMessage())
+        );
 
-        /*FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository);
-        Routes routes = Routes.getInstance();*/
+        funkoController.funkosByModelo().subscribe(
+                funko -> System.out.println("Numero de funkos por modelo: " + funko),
+                error -> System.out.println("Error: " + error.getMessage())
+        );
 
+        funkoController.funkosIn2023().subscribe(
+                funko -> System.out.println("Funkos que salieron en 2023: " + funko),
+                error -> System.out.println("Error: " + error.getMessage())
+        );
 
-        /*System.out.println("-------------------------- OBTENCION DE DATOS --------------------------");
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        funkoController.funkoStitch().subscribe(
+                funko -> System.out.println("Funkos de Stitch: " + funko),
+                error -> System.out.println("Error: " + error.getMessage())
+        );
 
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().get();
-        Callable<Funko> expensiveFunko = () -> funkoController.expensiveFunko().get();
-        Callable<Double> averagePrice = () -> funkoController.averagePrice().get();
-        Callable<Map<Modelo, List<Funko>>> groupByModelo = () -> funkoController.groupByModelo().get();
-        Callable<Map<Modelo, Long>> funkosByModelo = () -> funkoController.funkosByModelo().get();
-        Callable<List<Funko>> funkosIn2023 = () -> funkoController.funkosIn2023().get();
-        Callable<Double> numberStitch = () -> funkoController.numberStitch().get();
-        Callable<List<Funko>> funkoStitch = () -> funkoController.funkoStitch().get();
-
-
-        Future<List<Funko>> future = executorService.submit(loadCsv);
-        Future<Funko> future2 = executorService.submit(expensiveFunko);
-        Future<Double> future3 = executorService.submit(averagePrice);
-        Future<Map<Modelo, List<Funko>>> future4 = executorService.submit(groupByModelo);
-        Future<Map<Modelo, Long>> future5 = executorService.submit(funkosByModelo);
-        Future<List<Funko>> future6 = executorService.submit(funkosIn2023);
-        Future<Double> future7 = executorService.submit(numberStitch);
-        Future<List<Funko>> future8 = executorService.submit(funkoStitch);
-
-
-        try {
-            System.out.println("FUNKOS: " + future.get());
-            System.out.println("FUNKO MAS CARO: " + future2.get());
-            System.out.println("PRECIO MEDIO: " + future3.get());
-            System.out.println("AGRUPADOS POR MODELO: " + future4.get());
-            System.out.println("NUMERO DE FUNKOS POR MODELO: " + future5.get());
-            System.out.println("FUNKOS LANZADOS EN 2023: " + future6.get());
-            System.out.println("NUMERO FUNKOS STITCH: " + future7.get());
-            System.out.println("FUNKOS DE STITCH: " + future8.get());
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+        funkoController.numberStitch().subscribe(
+                funko -> System.out.println("Numero de funkos de Stitch: " + funko),
+                error -> System.out.println("Error: " + error.getMessage())
+        );
 
 
-        System.out.println("-------------------------- INSERTAMOS FUNKOS --------------------------");
-        for (Funko funko : funkoController.getFunkos()) {
-            funkosService.save(funko);
-        }
+        funkosService.getNotifications().subscribe(
+                notificacion -> {
+                    switch (notificacion.getTipo()) {
+                        case NEW:
+                            System.out.println("🟢 Funko insertado: " + notificacion.getContenido());
+                            break;
+                        case UPDATED:
+                            System.out.println("🟠 Funko actualizado: " + notificacion.getContenido());
+                            break;
+                        case DELETED:
+                            System.out.println("🔴 Funko eliminado: " + notificacion.getContenido());
+                            break;
+                    }
+                },
+                error -> System.err.println("Se ha producido un error: " + error),
+                () -> System.out.println("Completado")
+        );
 
+        funkosService.findAll().collectList().subscribe(
+                funkos -> System.out.println("Funkos: " + funkos),
+                error -> System.err.println("Error al obtener todos los funkos: " + error.getMessage()),
+                () -> System.out.println("Obtención de funkos completada")
+        );
 
-        System.out.println("-------------------------- MOSTRAMOS FUNKOS DE LA BASE DE DATOS --------------------------");
-        funkosService.findAll().forEach(System.out::println);
-
-        System.out.println("-------------------------- EXPORTAMOS FUNKOS A JSON --------------------------");
-        CompletableFuture<Void> future9 = funkoRepository.exportJson(routes.getRouteFunkosJson());
-        future9.get();
-
-
-        executorService.shutdown();
-        funkosService.close();*/
+        System.exit(0);
     }
 }

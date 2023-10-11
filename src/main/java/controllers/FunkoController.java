@@ -70,49 +70,47 @@ public class FunkoController {
     }
 
     public Mono<Funko> expensiveFunko() {
-        return Flux.defer(() -> Flux.fromIterable(funkos)) // Convierte la lista de funkos en un Flux
-                .collectList() // Recolecta todos los funkos en una lista
+        return loadCsv()
+                .collectList()
                 .flatMap(funkoList -> {
                     if (funkoList.isEmpty()) {
                         return Mono.error(new NoSuchElementException("No hay funkos disponibles."));
                     }
-                    return Mono.just(funkoList.stream()
-                            .max(Comparator.comparingDouble(Funko::getPrecio))
-                            .orElseThrow());
+                    return Mono.just(Collections.max(funkoList, Comparator.comparingDouble(Funko::getPrecio)));
                 });
     }
     public Mono<Double> averagePrice() {
-        return Flux.defer(() -> Flux.fromIterable(funkos))
+        return loadCsv()
                 .map(Funko::getPrecio)
                 .collect(Collectors.averagingDouble(Double::doubleValue))
                 .defaultIfEmpty(0.0); // Manejar el caso cuando no hay funkos
     }
 
     public Mono<Map<Modelo, List<Funko>>> groupByModelo() {
-        return Flux.defer(() -> Flux.fromIterable(funkos))
+        return loadCsv()
                 .collect(Collectors.groupingBy(Funko::getModelo));
     }
 
     public Mono<Map<Modelo, Long>> funkosByModelo() {
-        return Flux.defer(() -> Flux.fromIterable(funkos))
+        return loadCsv()
                 .collect(Collectors.groupingBy(Funko::getModelo, Collectors.counting()));
     }
 
     public Mono<List<Funko>> funkosIn2023() {
-        return Flux.defer(() -> Flux.fromIterable(funkos))
+        return loadCsv()
                 .filter(funko -> funko.getFechaLanzamiento().getYear() == 2023)
                 .collectList();
     }
 
     public Mono<Double> numberStitch() {
-        return Flux.defer(() -> Flux.fromIterable(funkos))
+        return loadCsv()
                 .filter(funko -> funko.getNombre().contains("Stitch"))
                 .count()
                 .map(Double::valueOf);
     }
 
     public Mono<List<Funko>> funkoStitch() {
-        return Flux.defer(() -> Flux.fromIterable(funkos))
+        return loadCsv()
                 .filter(funko -> funko.getNombre().contains("Stitch"))
                 .collectList();
     }
