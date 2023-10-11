@@ -17,6 +17,7 @@ import services.database.DataBaseManager;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -25,18 +26,15 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     private static FunkoRepositoryImpl instance;
     private final Logger logger = LoggerFactory.getLogger(FunkoRepositoryImpl.class);
     private final ConnectionPool connectionFactory;
-    private static final Lock lock = new ReentrantLock();
 
     private FunkoRepositoryImpl(DataBaseManager db) {
         this.connectionFactory = db.getConnectionPool();
     }
 
     public static FunkoRepositoryImpl getInstance(DataBaseManager db) {
-        lock.lock();
         if (instance == null) {
             instance = new FunkoRepositoryImpl(db);
         }
-        lock.unlock();
         return instance;
     }
 
@@ -94,7 +92,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
                                 .cod(UUID.fromString(fila.get("cod", String.class)))
                                 .nombre(fila.get("nombre", String.class))
                                 .modelo(Modelo.valueOf(fila.get("modelo", String.class)))
-                                .precio(fila.get("precio", Double.class))
+                                .precio(fila.get("precio", Float.class).doubleValue())
                                 .fechaLanzamiento(fila.get("fechaLanzamiento", java.time.LocalDate.class))
                                 .build()
                 ))),
@@ -116,8 +114,8 @@ public class FunkoRepositoryImpl implements FunkoRepository {
                                 .cod(UUID.fromString(fila.get("cod", String.class)))
                                 .nombre(fila.get("nombre", String.class))
                                 .modelo(Modelo.valueOf(fila.get("modelo", String.class)))
-                                .precio(fila.get("precio", Double.class))
-                                .fechaLanzamiento(fila.get("fechaLanzamiento", java.time.LocalDate.class))
+                                .precio(fila.get("precio", Float.class).doubleValue())
+                                .fechaLanzamiento(fila.get("fechaLanzamiento", LocalDate.class))
                                 .build()
                 )),
                 Connection::close
@@ -168,7 +166,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
                                 .cod(UUID.fromString(fila.get("cod", String.class)))
                                 .nombre(fila.get("nombre", String.class))
                                 .modelo(Modelo.valueOf(fila.get("modelo", String.class)))
-                                .precio(fila.get("precio", Double.class))
+                                .precio(fila.get("precio", Float.class).doubleValue())
                                 .fechaLanzamiento(fila.get("fechaLanzamiento", java.time.LocalDate.class))
                                 .build()
                 )),

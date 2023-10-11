@@ -28,6 +28,7 @@ public class FunkosServiceImpl implements FunkosService {
         this.notification = notification;
     }
 
+
     public static FunkosServiceImpl getInstance(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
         if (instance == null) {
             lock.lock();
