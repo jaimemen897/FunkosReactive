@@ -12,7 +12,6 @@ import routes.Routes;
 import java.io.*;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -83,7 +82,7 @@ public class FunkoController {
         return loadCsv()
                 .map(Funko::getPrecio)
                 .collect(Collectors.averagingDouble(Double::doubleValue))
-                .defaultIfEmpty(0.0); // Manejar el caso cuando no hay funkos
+                .defaultIfEmpty(0.0);
     }
 
     public Mono<Map<Modelo, List<Funko>>> groupByModelo() {
@@ -96,10 +95,11 @@ public class FunkoController {
                 .collect(Collectors.groupingBy(Funko::getModelo, Collectors.counting()));
     }
 
-    public Mono<List<Funko>> funkosIn2023() {
+    public Flux<Funko> funkosIn2023() {
         return loadCsv()
                 .filter(funko -> funko.getFechaLanzamiento().getYear() == 2023)
-                .collectList();
+                .collectList()
+                .flatMapMany(Flux::fromIterable);
     }
 
     public Mono<Double> numberStitch() {
@@ -112,6 +112,7 @@ public class FunkoController {
     public Mono<List<Funko>> funkoStitch() {
         return loadCsv()
                 .filter(funko -> funko.getNombre().contains("Stitch"))
-                .collectList();
+                .collectList()
+                .flatMapMany(Flux::fromIterable);
     }
 }
