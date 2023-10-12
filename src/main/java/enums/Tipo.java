@@ -1,5 +1,5 @@
 package enums;
 
 public enum Tipo {
-    NEW, UPDATED, DELETED
+    NEW, UPDATED, DELETED, INFO
 }

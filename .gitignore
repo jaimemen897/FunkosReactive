@@ -44,3 +44,4 @@ bin/
 .idea/
 /database.mv.db
 /database.trace.db
+/src/data/funkos.json

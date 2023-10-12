@@ -4,22 +4,21 @@ import models.Funko;
 import models.Notificacion;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
-import repositories.funkos.FunkoRepositoryImpl;
 
-public class FunkosNotificationsImpl implements FunkosNotifications{
-    /*private static FunkoRepositoryImpl INSTANCE = new FunkoRepositoryImpl();
+public class FunkosNotificationsImpl implements FunkosNotifications<Funko> {
+
+    private static FunkosNotificationsImpl INSTANCE = new FunkosNotificationsImpl();
 
     private final Flux<Notificacion<Funko>> funkosNotificationFlux;
     private FluxSink<Notificacion<Funko>> funkosNotification;
 
-    private FunkoRepositoryImpl() {
-        this.funkosNotificationFlux = Flux.<Notificacion<Funko>>create
-                (emitter -> this.funkosNotification = emitter).share();
+    private FunkosNotificationsImpl() {
+        this.funkosNotificationFlux = Flux.<Notificacion<Funko>>create(emitter -> this.funkosNotification = emitter).share();
     }
 
-    public static FunkoRepositoryImpl getInstance() {
+    public static FunkosNotificationsImpl getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new FunkoRepositoryImpl();
+            INSTANCE = new FunkosNotificationsImpl();
         }
         return INSTANCE;
     }
@@ -30,7 +29,7 @@ public class FunkosNotificationsImpl implements FunkosNotifications{
     }
 
     @Override
-    public void notify(Notificacion<Funko> notificacion) {
+    public void notify(Notificacion notificacion) {
         funkosNotification.next(notificacion);
-    }*/
+    }
 }

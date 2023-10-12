@@ -2,7 +2,6 @@ package services.funkos;
 
 import enums.Tipo;
 import exceptions.Funko.FunkoNotFoundException;
-import exceptions.Funko.FunkoNotStoragedException;
 import models.Funko;
 import models.Notificacion;
 import org.slf4j.Logger;
@@ -11,9 +10,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import repositories.funkos.FunkoRepositoryImpl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,35 +37,26 @@ public class FunkosServiceImpl implements FunkosService {
         return instance;
     }
 
-
     @Override
-    public Flux<Funko> findAll() throws ExecutionException, InterruptedException {
+    public Flux<Funko> findAll() {
         return funkoRepository.findAll();
     }
 
     @Override
-    public Flux<Funko> findByNombre(String nombre) throws ExecutionException, InterruptedException, FunkoNotFoundException {
-        Flux<Funko> funkos = funkoRepository.findByNombre(nombre);
-        if (funkos == null) {
-            throw new FunkoNotFoundException("No se ha encontrado ningún funko con el nombre: " + nombre);
-        }
-        return funkoRepository.findByNombre(nombre);
+    public Flux<Funko> findByNombre(String nombre) throws FunkoNotFoundException {
+        return funkoRepository.findByNombre(nombre)
+                .flatMap(funko -> cache.put(funko.getId2(), funko)
+                        .then(Mono.just(funko)))
+                .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se ha encontrado ningún funko con el nombre: " + nombre)));
     }
 
     @Override
-    public Mono<Funko> findById(long id) throws ExecutionException, InterruptedException, FunkoNotFoundException {
-        Mono<Funko> funko = cache.get(id);
-        if (funko != null) {
-            logger.debug("Funko obtenido de la cache con id: " + id);
-            return funko;
-        } else {
-            logger.debug("Funko obtenido de la base de datos con id: " + id);
-            Mono<Funko> funkoDB = funkoRepository.findById(id);
-            if (funkoDB == null) {
-                throw new FunkoNotFoundException("No se ha encontrado ningún funko con el id: " + id);
-            }
-            return funkoRepository.findById(id);
-        }
+    public Mono<Funko> findById(long id) throws FunkoNotFoundException {
+        return cache.get(id)
+                .switchIfEmpty(funkoRepository.findById(id)
+                        .flatMap(funko1 -> cache.put(funko1.getId2(), funko1)
+                                .then(Mono.just(funko1)))
+                        .switchIfEmpty(Mono.error(new FunkoNotFoundException("Funko con ID: " + id + " no encontrado"))));
     }
 
     private Mono<Funko> saveWithNoNotifications(Funko funko) {
@@ -78,7 +65,7 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     @Override
-    public Mono<Funko> save(Funko funko) throws ExecutionException, InterruptedException, FunkoNotStoragedException {
+    public Mono<Funko> save(Funko funko) {
         return saveWithNoNotifications(funko)
                 .doOnSuccess(funko1 -> cache.put(funko1.getId2(), funko1));
     }
@@ -91,7 +78,7 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     @Override
-    public Mono<Funko> update(Funko funko) throws ExecutionException, InterruptedException, FunkoNotFoundException {
+    public Mono<Funko> update(Funko funko) {
         logger.debug("Actualizando funko con id: " + funko.getId2());
         return updateWithNoNotifications(funko)
                 .doOnSuccess(updated -> notification.notify(new Notificacion<>(Tipo.UPDATED, updated)));
@@ -105,22 +92,22 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     @Override
-    public Mono<Boolean> deleteById(long id) throws ExecutionException, InterruptedException, FunkoNotFoundException {
+    public Mono<Boolean> deleteById(long id) {
         logger.debug("Eliminando: " + id);
-       return deleteByIdWithoutNotification(id)
-               .doOnSuccess(deleted -> notification.notify(new Notificacion<>(Tipo.DELETED, deleted)))
-               .map(funko -> true);
+        return deleteByIdWithoutNotification(id)
+                .doOnSuccess(deleted -> notification.notify(new Notificacion<>(Tipo.DELETED, deleted)))
+                .map(funko -> true);
     }
 
     @Override
-    public Mono<Void> deleteAll() throws ExecutionException, InterruptedException {
+    public Mono<Void> deleteAll() {
         logger.debug("Eliminando todos los funkos");
         cache.clear();
         return funkoRepository.deleteAll()
                 .then(Mono.empty());
     }
 
-    public Flux<Notificacion<Funko>> getNotifications(){
+    public Flux<Notificacion<Funko>> getNotifications() {
         return notification.getNotificationAsFlux();
     }
 }

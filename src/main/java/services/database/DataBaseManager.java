@@ -2,25 +2,23 @@ package services.database;
 
 import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.pool.ConnectionPoolConfiguration;
-import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.ConnectionFactories;
-import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.Statement;
+import io.r2dbc.spi.*;
 import lombok.Getter;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import routes.Routes;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
+import static io.r2dbc.spi.ConnectionFactoryOptions.*;
+
 
 
 @Getter
@@ -30,7 +28,6 @@ public class DataBaseManager {
     private final Logger logger = LoggerFactory.getLogger(DataBaseManager.class);
     private final ConnectionFactory connectionFactory;
     private final ConnectionPool pool;
-    private static final Lock lock = new ReentrantLock();
     private static boolean initDataBase = false;
     private String dbUrl;
     private String dbUser;
@@ -40,7 +37,16 @@ public class DataBaseManager {
     private DataBaseManager() {
         loadResources();
 
-        connectionFactory = ConnectionFactories.get(dbUrl);
+
+        ConnectionFactoryOptions options = builder()
+                .option(DRIVER, "h2")
+                .option(PROTOCOL, "file")
+                .option(USER, dbUser)
+                .option(PASSWORD, dbPassword)
+                .option(DATABASE, dbUrl)
+                .build();
+
+        connectionFactory = ConnectionFactories.get(options);
 
         ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration
                 .builder(connectionFactory)
@@ -57,11 +63,9 @@ public class DataBaseManager {
 
 
     public static synchronized DataBaseManager getInstance() {
-        lock.lock();
         if (instance == null) {
             instance = new DataBaseManager();
         }
-        lock.unlock();
         return instance;
     }
 
@@ -96,7 +100,7 @@ public class DataBaseManager {
                 connection -> {
                     String scriptContent;
                     try {
-                        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(script)) {
+                        try (InputStream inputStream = new FileInputStream(script)) {
                             if (inputStream == null) {
                                 return Mono.error(new IOException("No se ha encontrado fichero script para inicializar tablas"));
                             } else {
