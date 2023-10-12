@@ -5,7 +5,7 @@ import models.Notificacion;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
-public class FunkosNotificationsImpl implements FunkosNotifications{
+public class FunkosNotificationsImpl implements FunkosNotifications<Funko> {
 
     private static FunkosNotificationsImpl INSTANCE = new FunkosNotificationsImpl();
 
@@ -29,7 +29,7 @@ public class FunkosNotificationsImpl implements FunkosNotifications{
     }
 
     @Override
-    public void notify(Notificacion<Funko> notificacion) {
+    public void notify(Notificacion notificacion) {
         funkosNotification.next(notificacion);
     }
 }

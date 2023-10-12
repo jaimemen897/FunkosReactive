@@ -10,11 +10,11 @@
 
 ### DataBase
 
-- [ ]  Debes cargar estos datos en una base de datos de tipo reactiva (R2DBC) en H2 en fichero, llamada "funkos".
-- [ ]  Los datos de conexión deben leerse de un fichero de propiedades y que debe estar gestionada por un manejador o
+- [x]  Debes cargar estos datos en una base de datos de tipo reactiva (R2DBC) en H2 en fichero, llamada "funkos".
+- [x]  Los datos de conexión deben leerse de un fichero de propiedades y que debe estar gestionada por un manejador o
   servicio de bases de datos.
-- [ ]  Esta base de datos usará un pool de conexiones reactivas con R2DBC-Pool.
-- [ ]  Además vamos a tener un IdGenerator, que se encargará de asignar las clases de manera reactiva. Deberá estar
+- [x]  Esta base de datos usará un pool de conexiones reactivas con R2DBC-Pool.
+- [x]  Además vamos a tener un IdGenerator, que se encargará de asignar las clases de manera reactiva. Deberá estar
   protegido para accesos concurrente en entornos multihilo.
 
 ### Formato tabla FUNKOS
@@ -34,35 +34,35 @@
 ### CRUD
 
 - [ ]  Ten en cuenta que si aplicas en patrón Singleton, este tiene que estar protegido en entornos multihilo.
-- [ ]  Debes crear un repositorio CRUD totalmente reactivo completo parala gestión de Funkos.
-- [ ]  Debe incluir una que se llame findByNombre, donde se pueda buscar por nombres que contengan el patrón indicado.
-- [ ]  Se debe asegurar una instancia única de este repositorio.
+- [x]  Debes crear un repositorio CRUD totalmente reactivo completo parala gestión de Funkos.
+- [x]  Debe incluir una que se llame findByNombre, donde se pueda buscar por nombres que contengan el patrón indicado.
+- [x]  Se debe asegurar una instancia única de este repositorio.
 
 ### Services
 
 - [ ]  Además, debes usar un servicio totalmente reactivo que haga uso de este repositorio.
-- [ ]  E implemente una caché totalmente reactiva de 15 elementos máximo que más han sido accedidos y además expiren si
+- [x]  E implemente una caché totalmente reactiva de 15 elementos máximo que más han sido accedidos y además expiren si
   llevan más de 90 segundos en la caché sin haber sido accedidos.
-- [ ]  Este servicio hará uso de excepciones personalizadas de no chequeadas si no se puede realizar las operaciones
+- [x]  Este servicio hará uso de excepciones personalizadas de no chequeadas si no se puede realizar las operaciones
   indicadas.
-- [ ]  Este servicio tendrá un método backup que exporta los datos en JSON a una ruta pasada de manera reactiva, solo si
+- [x]  Este servicio tendrá un método backup que exporta los datos en JSON a una ruta pasada de manera reactiva, solo si
   esta es válida, si no producirá una excepción personalizada.
-- [ ]  Un método import para importarlos de manera reactiva desde el CSV.
-- [ ]  Nuestro servicio hará uso de sistema de notificaciones para las operaciones de inserción, actualización y borrado
+- [x]  Un método import para importarlos de manera reactiva desde el CSV.
+- [x]  Nuestro servicio hará uso de sistema de notificaciones para las operaciones de inserción, actualización y borrado
   de funkos.
-- [ ]  Para las notificaciones es recomendables hacer un Servicio de Notificaciones que las gestione.
+- [x]  Para las notificaciones es recomendables hacer un Servicio de Notificaciones que las gestione.
 - [ ]  Para importar y exportar los datos, se recomienda hacer un servicio reactivo de almacenamiento con los métodos de
   importar y exportar los datos y excepciones personalizadas.
 
 ### Estructura de clases
 
-- [ ]  DatabaseManager reactivo con los datos de las conexión leídos desde un fichero properties y un Pool de conexiones
+- [x]  DatabaseManager reactivo con los datos de la conexión leídos desde un fichero properties y un Pool de conexiones
   en reactivas con instancia única.
-- [ ]  IdGenerator reactivo y protegido en entornos multihilo con instancia única.
-- [ ]  Repositorio de Funkos reactivo al que se le inyecta el IdGenerator y DatabaseManager, tiene una instancia única.
-- [ ]  Servicio de Almacenamiento reactivo para importar de CSV y exportar a JSON, tiene una instancia única.
-- [ ]  Cache reactiva de Funkos.
-- [ ]  Servicio de notificaciones reactivo para Funkos con instancia única.
+- [x]  IdGenerator reactivo y protegido en entornos multihilo con instancia única.
+- [x]  Repositorio de Funkos reactivo al que se le inyecta el IdGenerator y DatabaseManager, tiene una instancia única.
+- [x]  Servicio de Almacenamiento reactivo para importar de CSV y exportar a JSON, tiene una instancia única.
+- [x]  Cache reactiva de Funkos.
+- [x]  Servicio de notificaciones reactivo para Funkos con instancia única.
 - [ ]  Servicio de Funkos al que se le inyecta: Repositorio de Funkos, Caché de Funkos, y Servicio de Almacenamiento y
   Servicio de Notificaciones.
 
@@ -76,13 +76,13 @@
 
 ### Consulta de datos
 
-- [ ]  Funko más caro.
-- [ ]  Media de precio de Funkos.
-- [ ]  Funkos agrupados por modelos.
-- [ ]  Número de funkos por modelos.
-- [ ]  Funkos que han sido lanzados en 2023.
-- [ ]  Número de funkos de Stitch.
-- [ ]  Listado de funkos de Stitch.
+- [x]  Funko más caro.
+- [x]  Media de precio de Funkos.
+- [x]  Funkos agrupados por modelos.
+- [x]  Número de funkos por modelos.
+- [x]  Funkos que han sido lanzados en 2023.
+- [x]  Número de funkos de Stitch.
+- [x]  Listado de funkos de Stitch.
 
 ### Tests
 

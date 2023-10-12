@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class FunkoCacheImpl implements FunkoCache {
     private final Logger logger = LoggerFactory.getLogger(FunkoCacheImpl.class);
-    private final int maxSize = 10;
+    private final int maxSize = 15;
     private final Map<Long, Funko> cache;
     private final ScheduledExecutorService cleaner;
 
@@ -32,7 +32,7 @@ public class FunkoCacheImpl implements FunkoCache {
         this.cleaner = Executors.newSingleThreadScheduledExecutor();
 
         //Programar la limpieza cada dos minutos
-        this.cleaner.scheduleAtFixedRate(this::clear, 2, 2, TimeUnit.MINUTES);
+        this.cleaner.scheduleAtFixedRate(this::clear, 90, 90, TimeUnit.SECONDS);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class FunkoCacheImpl implements FunkoCache {
     @Override
     public void clear() {
         cache.entrySet().removeIf(entry -> {
-            boolean shouldRemove = entry.getValue().getUpdatedAt().plusMinutes(2).isBefore(LocalDateTime.now());
+            boolean shouldRemove = entry.getValue().getUpdatedAt().plusSeconds(90).isBefore(LocalDateTime.now());
             if (shouldRemove) {
                 logger.debug("Eliminando funko de la cache con id:" + entry.getKey());
             }

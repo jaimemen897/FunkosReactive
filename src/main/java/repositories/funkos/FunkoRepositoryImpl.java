@@ -18,9 +18,9 @@ import services.database.DataBaseManager;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class FunkoRepositoryImpl implements FunkoRepository {
     private static FunkoRepositoryImpl instance;
@@ -154,7 +154,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     @Override
     public Flux<Funko> findByNombre(String nombre) {
         logger.debug("Buscando funko por nombre: " + nombre);
-        String query = "SELECT * FROM FUNKOS WHERE nombre = ?";
+        String query = "SELECT * FROM FUNKOS WHERE nombre LIKE ?";
         return Flux.usingWhen(
                 connectionFactory.create(),
                 connection -> Flux.from(connection.createStatement(query)
@@ -176,6 +176,9 @@ public class FunkoRepositoryImpl implements FunkoRepository {
 
     public Mono<Void> exportJson(String ruta) {
         logger.debug("Exportando funkos a JSON, ruta: " + ruta);
+        List<Funko> funkos = new ArrayList<>();
+
+        findAll().subscribe(funkos::add);
 
         return Mono.fromRunnable((() -> {
             GsonBuilder gsonBuilder = new GsonBuilder();
@@ -183,7 +186,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
             Gson gson = gsonBuilder.setPrettyPrinting().create();
 
             try (FileWriter writer = new FileWriter(ruta)) {
-                gson.toJson(findAll().collectList(), writer);
+                gson.toJson(funkos, writer);
             } catch (IOException e) {
                 throw new ErrorInFile("Error al escribir en el archivo JSON: " + e.getMessage());
             }

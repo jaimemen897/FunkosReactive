@@ -28,7 +28,6 @@ public class DataBaseManager {
     private final Logger logger = LoggerFactory.getLogger(DataBaseManager.class);
     private final ConnectionFactory connectionFactory;
     private final ConnectionPool pool;
-    private static final Lock lock = new ReentrantLock();
     private static boolean initDataBase = false;
     private String dbUrl;
     private String dbUser;
@@ -64,11 +63,9 @@ public class DataBaseManager {
 
 
     public static synchronized DataBaseManager getInstance() {
-        lock.lock();
         if (instance == null) {
             instance = new DataBaseManager();
         }
-        lock.unlock();
         return instance;
     }
 
