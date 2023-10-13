@@ -16,21 +16,22 @@ public class Main {
         FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(dataBaseManager);
         FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository, FunkosNotificationsImpl.getInstance());
         Routes routes = Routes.getInstance();
+        FunkosNotificationsImpl notifications = FunkosNotificationsImpl.getInstance();
 
-        funkoController.getAllAsFlux().subscribe();
-        funkoController.getNotificationsAsFlux().subscribe(
+        notifications.getNotificationAsFlux().subscribe(
                 notification -> {
                     switch (notification.getTipo()) {
                         case NEW -> System.out.println("🟢 Funko insertado: " + notification.getContenido());
-                        case UPDATED -> System.out.println("🟠 Funko actualizado: " + notification.getContenido());
-                        case DELETED -> System.out.println("🔴 Funko eliminado: " + notification.getContenido());
+                        case UPDATED ->
+                                System.out.println("🟠 Funko actualizado: " + notification.getContenido());
+                        case DELETED ->
+                                System.out.println("🔴 Funko eliminado: " + notification.getContenido());
                         case INFO -> System.out.println("🔵 " + notification.getContenido());
                     }
                 },
                 error -> System.out.println("Error: " + error.getMessage()),
                 () -> System.out.println("Obtención de funkos completada")
         );
-
         funkoController.loadCsv();
 
         funkoController.expensiveFunko().subscribe();
@@ -48,13 +49,13 @@ public class Main {
         funkoController.numberStitch().subscribe();
 
 
-        for (Funko funko: funkoController.getFunkos()) {
-            funkoRepository.save(funko).subscribe();
+
+        for (Funko funko : funkoController.getFunkos()) {
+            funkosService.save(funko).subscribe();
         }
 
 
-
-        funkosService.findById(95L).subscribe(
+        funkosService.findById(80L).subscribe(
                 funkos -> System.out.println("Funko: " + funkos),
                 error -> System.err.println("Error al obtener todos los funkos: " + error.getMessage()),
                 () -> System.out.println("Obtención de funkos completada")
@@ -68,18 +69,6 @@ public class Main {
 
         funkoRepository.exportJson(routes.getRouteFunkosJson()).subscribe();
 
-
-        funkosService.getNotifications().subscribe(
-                notificacion -> {
-                    switch (notificacion.getTipo()) {
-                        case NEW -> System.out.println("🟢 Funko insertado: " + notificacion.getContenido());
-                        case UPDATED -> System.out.println("🟠 Funko actualizado: " + notificacion.getContenido());
-                        case DELETED -> System.out.println("🔴 Funko eliminado: " + notificacion.getContenido());
-                    }
-                },
-                error -> System.err.println("Se ha producido un error: " + error),
-                () -> System.out.println("Completado")
-        );
 
         System.exit(0);
     }

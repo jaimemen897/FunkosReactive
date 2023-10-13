@@ -7,9 +7,12 @@ import models.Notificacion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import repositories.funkos.FunkoRepositoryImpl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,20 +22,17 @@ public class FunkosServiceImpl implements FunkosService {
     private final FunkoCache cache;
     private final Logger logger = LoggerFactory.getLogger(FunkosServiceImpl.class);
     private final FunkoRepositoryImpl funkoRepository;
-    private static final Lock lock = new ReentrantLock();
     private final FunkosNotifications notification;
 
     private FunkosServiceImpl(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
         this.funkoRepository = funkoRepository;
         this.cache = new FunkoCacheImpl();
-        this.notification = notification;
+        this.notification = FunkosNotificationsImpl.getInstance();
     }
 
-    public static FunkosServiceImpl getInstance(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
+    public synchronized static FunkosServiceImpl getInstance(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
         if (instance == null) {
-            lock.lock();
             instance = new FunkosServiceImpl(funkoRepository, notification);
-            lock.unlock();
         }
         return instance;
     }
@@ -48,6 +48,7 @@ public class FunkosServiceImpl implements FunkosService {
                 .flatMap(funko -> cache.put(funko.getId2(), funko)
                         .then(Mono.just(funko)))
                 .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se ha encontrado ningún funko con el nombre: " + nombre)));
+
     }
 
     @Override
@@ -61,13 +62,14 @@ public class FunkosServiceImpl implements FunkosService {
 
     private Mono<Funko> saveWithNoNotifications(Funko funko) {
         logger.debug(("Guardando funko sin notificacion : " + funko));
-        return funkoRepository.save(funko);
+        return funkoRepository.save(funko)
+                .doOnSuccess(funko1 -> cache.put(funko1.getId2(), funko1));
     }
 
     @Override
     public Mono<Funko> save(Funko funko) {
         return saveWithNoNotifications(funko)
-                .doOnSuccess(funko1 -> cache.put(funko1.getId2(), funko1));
+        .doOnSuccess(saved -> notification.notify(new Notificacion<>(Tipo.NEW, saved)));
     }
 
     private Mono<Funko> updateWithNoNotifications(Funko funko) {

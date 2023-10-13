@@ -8,7 +8,6 @@ import models.Funko;
 import models.IdGenerator;
 import models.Notificacion;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import routes.Routes;
 import services.funkos.FunkosNotificationsImpl;
@@ -31,13 +30,7 @@ public class FunkoController {
         return instance;
     }
 
-    //PROFE
     private final List<Funko> funkos = new ArrayList<>();
-    private FluxSink<List<Funko>> funkoFluxSink;
-    private final Flux<List<Funko>> funkoFlux = Flux.<List<Funko>>create(emitter -> this.funkoFluxSink = emitter).share();
-
-
-    //MIOS
     private final FunkosNotificationsImpl notification = FunkosNotificationsImpl.getInstance();
     private final IdGenerator idGenerator = IdGenerator.getInstance();
     private final Routes routes = Routes.getInstance();
@@ -74,22 +67,12 @@ public class FunkoController {
 
     public void add(Funko funko) {
         funkos.add(funko);
-        funkoFluxSink.next(funkos);
-        notification.notify(new Notificacion<>(Tipo.NEW, funko));
+        notification.notify(new Notificacion<>(Tipo.NEW, "Read csv: " + funko));
     }
 
     public void delete(Funko funko) {
         funkos.remove(funko);
-        funkoFluxSink.next(funkos);
-        notification.notify(new Notificacion<>(Tipo.DELETED, funko));
-    }
-
-    public Flux<List<Funko>> getAllAsFlux() {
-        return funkoFlux;
-    }
-
-    public Flux<Notificacion<Funko>> getNotificationsAsFlux() {
-        return notification.getNotificationAsFlux();
+        notification.notify(new Notificacion<>(Tipo.DELETED,  funko));
     }
 
     public Mono<Funko> expensiveFunko() {

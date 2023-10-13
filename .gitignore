@@ -45,3 +45,4 @@ bin/
 /database.mv.db
 /database.trace.db
 /src/data/funkos.json
+/h2/database.trace.db
