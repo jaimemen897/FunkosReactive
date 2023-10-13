@@ -45,11 +45,7 @@ public class FunkoCacheImpl implements FunkoCache {
     @Override
     public Mono<Funko> get(Long key) {
             logger.debug("Obteniendo funko de la cache con id:" + key);
-            if (cache.get(key) == null) {
-                logger.error("No se ha encontrado el funko con id:" + key);
-            }
             return Mono.justOrEmpty(cache.get(key));
-
     }
 
     @Override

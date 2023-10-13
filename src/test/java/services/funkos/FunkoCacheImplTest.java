@@ -44,7 +44,7 @@ class FunkoCacheImplTest {
         cache.put(id, funko).block();
         cache.remove(id).block();
 
-        assertEquals(null, cache.get(id).block());
+        assertNull(cache.get(id).block());
     }
 
     @Test

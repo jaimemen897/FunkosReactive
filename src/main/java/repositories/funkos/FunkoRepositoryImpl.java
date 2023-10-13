@@ -31,7 +31,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
         this.connectionFactory = db.getConnectionPool();
     }
 
-    public static FunkoRepositoryImpl getInstance(DataBaseManager db) {
+    public static synchronized FunkoRepositoryImpl getInstance(DataBaseManager db) {
         if (instance == null) {
             instance = new FunkoRepositoryImpl(db);
         }

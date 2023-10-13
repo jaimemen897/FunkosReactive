@@ -4,7 +4,6 @@ import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.spi.*;
 import lombok.Getter;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -13,13 +12,9 @@ import routes.Routes;
 import java.io.*;
 import java.time.Duration;
 import java.util.Properties;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
-
-
 
 @Getter
 public class DataBaseManager {
@@ -36,7 +31,6 @@ public class DataBaseManager {
 
     private DataBaseManager() {
         loadResources();
-
 
         ConnectionFactoryOptions options = builder()
                 .option(DRIVER, "h2")

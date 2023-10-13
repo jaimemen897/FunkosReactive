@@ -13,7 +13,7 @@ public class Routes {
     private final String removeSqlFile = "src" + File.separator + "main" + File.separator + "resources" + File.separator + "delete.sql";
     private final String createSqlFile = "src" + File.separator + "main" + File.separator + "resources" + File.separator + "init.sql";
 
-    public static Routes getInstance() {
+    public static synchronized Routes getInstance() {
         if (instance == null) {
             instance = new Routes();
         }

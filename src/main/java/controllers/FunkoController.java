@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class FunkoController {
     private static FunkoController instance;
 
-    public static FunkoController getInstance() {
+    public static synchronized FunkoController getInstance() {
         if (instance == null) {
             instance = new FunkoController();
         }
@@ -67,7 +67,7 @@ public class FunkoController {
 
     public void add(Funko funko) {
         funkos.add(funko);
-        notification.notify(new Notificacion<>(Tipo.NEW, "Read csv: " + funko));
+        notification.notify(new Notificacion<>(Tipo.NEW, funko));
     }
 
     public void delete(Funko funko) {
@@ -77,43 +77,36 @@ public class FunkoController {
 
     public Mono<Funko> expensiveFunko() {
         Funko funkoMono = funkos.stream().max(Comparator.comparingDouble(Funko::getPrecio)).orElse(null);
-        notification.notify(new Notificacion<>(Tipo.INFO, "Funko mas caro: " + funkoMono));
         return Mono.fromCallable(() -> funkoMono);
     }
 
     public Mono<Double> averagePrice() {
-        Double averagePrice = funkos.stream().mapToDouble(Funko::getPrecio).average().orElse(0.0);
-        notification.notify(new Notificacion<>(Tipo.INFO, "Precio medio: " + averagePrice));
+        double averagePrice = funkos.stream().mapToDouble(Funko::getPrecio).average().orElse(0.0);
         return Mono.fromCallable(() -> averagePrice);
     }
 
     public Mono<Map<Modelo, List<Funko>>> groupByModelo() {
         Map<Modelo, List<Funko>> map = funkos.stream().collect(Collectors.groupingBy(Funko::getModelo));
-        notification.notify(new Notificacion<>(Tipo.INFO, "Agrupado por modelos: " + map));
         return Mono.fromCallable(() -> map);
     }
 
     public Mono<Map<Modelo, Long>> funkosByModelo() {
         Map<Modelo, Long> map = funkos.stream().collect(Collectors.groupingBy(Funko::getModelo, Collectors.counting()));
-        notification.notify(new Notificacion<>(Tipo.INFO, "Numero por modelo: " + map));
         return Mono.fromCallable(() -> map);
     }
 
     public Flux<Funko> funkosIn2023() {
         List<Funko> funkosList = funkos.stream().filter(funko -> funko.getFechaLanzamiento().getYear() == 2023).toList();
-        notification.notify(new Notificacion<>(Tipo.INFO, "Funkos en 2023: " + funkosList));
         return Flux.fromIterable(funkosList);
     }
 
     public Mono<Double> numberStitch() {
         double number = funkos.stream().filter(funko -> funko.getNombre().contains("Stitch")).count();
-        notification.notify(new Notificacion<>(Tipo.INFO, "Numero de funkos de Stitch: " + number));
         return Mono.fromCallable(() -> number);
     }
 
     public Flux<Funko> funkoStitch() {
         List<Funko> funkosList = funkos.stream().filter(funko -> funko.getNombre().contains("Stitch")).toList();
-        notification.notify(new Notificacion<>(Tipo.INFO, "Funkos de Stitch: " + funkosList));
         return Flux.fromIterable(funkosList);
     }
 

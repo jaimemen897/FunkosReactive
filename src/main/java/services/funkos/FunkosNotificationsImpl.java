@@ -16,7 +16,7 @@ public class FunkosNotificationsImpl implements FunkosNotifications<Funko> {
         this.funkosNotificationFlux = Flux.<Notificacion<Funko>>create(emitter -> this.funkosNotification = emitter).share();
     }
 
-    public static FunkosNotificationsImpl getInstance() {
+    public static synchronized FunkosNotificationsImpl getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new FunkosNotificationsImpl();
         }
@@ -29,7 +29,7 @@ public class FunkosNotificationsImpl implements FunkosNotifications<Funko> {
     }
 
     @Override
-    public void notify(Notificacion notificacion) {
+    public void notify(Notificacion<Funko> notificacion) {
         funkosNotification.next(notificacion);
     }
 }

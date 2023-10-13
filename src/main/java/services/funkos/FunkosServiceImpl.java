@@ -7,14 +7,8 @@ import models.Notificacion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import repositories.funkos.FunkoRepositoryImpl;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class FunkosServiceImpl implements FunkosService {
 
@@ -22,15 +16,15 @@ public class FunkosServiceImpl implements FunkosService {
     private final FunkoCache cache;
     private final Logger logger = LoggerFactory.getLogger(FunkosServiceImpl.class);
     private final FunkoRepositoryImpl funkoRepository;
-    private final FunkosNotifications notification;
+    private final FunkosNotifications<Funko> notification;
 
-    private FunkosServiceImpl(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
+    private FunkosServiceImpl(FunkoRepositoryImpl funkoRepository, FunkosNotifications<Funko> notification) {
         this.funkoRepository = funkoRepository;
         this.cache = new FunkoCacheImpl();
         this.notification = FunkosNotificationsImpl.getInstance();
     }
 
-    public synchronized static FunkosServiceImpl getInstance(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
+    public static synchronized FunkosServiceImpl getInstance(FunkoRepositoryImpl funkoRepository, FunkosNotifications<Funko> notification) {
         if (instance == null) {
             instance = new FunkosServiceImpl(funkoRepository, notification);
         }
@@ -43,7 +37,7 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     @Override
-    public Flux<Funko> findByNombre(String nombre) throws FunkoNotFoundException {
+    public Flux<Funko> findByNombre(String nombre) {
         return funkoRepository.findByNombre(nombre)
                 .flatMap(funko -> cache.put(funko.getId2(), funko)
                         .then(Mono.just(funko)))
@@ -52,7 +46,7 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     @Override
-    public Mono<Funko> findById(long id) throws FunkoNotFoundException {
+    public Mono<Funko> findById(long id) {
         return cache.get(id)
                 .switchIfEmpty(funkoRepository.findById(id)
                         .flatMap(funko1 -> cache.put(funko1.getId2(), funko1)
@@ -69,7 +63,7 @@ public class FunkosServiceImpl implements FunkosService {
     @Override
     public Mono<Funko> save(Funko funko) {
         return saveWithNoNotifications(funko)
-        .doOnSuccess(saved -> notification.notify(new Notificacion<>(Tipo.NEW, saved)));
+                .doOnSuccess(saved -> notification.notify(new Notificacion<>(Tipo.NEW, saved)));
     }
 
     private Mono<Funko> updateWithNoNotifications(Funko funko) {
@@ -107,9 +101,5 @@ public class FunkosServiceImpl implements FunkosService {
         cache.clear();
         return funkoRepository.deleteAll()
                 .then(Mono.empty());
-    }
-
-    public Flux<Notificacion<Funko>> getNotifications() {
-        return notification.getNotificationAsFlux();
     }
 }
