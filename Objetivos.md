@@ -40,7 +40,7 @@
 
 ### Services
 
-- [ ]  Además, debes usar un servicio totalmente reactivo que haga uso de este repositorio.
+- [x]  Además, debes usar un servicio totalmente reactivo que haga uso de este repositorio.
 - [x]  E implemente una caché totalmente reactiva de 15 elementos máximo que más han sido accedidos y además expiren si
   llevan más de 90 segundos en la caché sin haber sido accedidos.
 - [x]  Este servicio hará uso de excepciones personalizadas de no chequeadas si no se puede realizar las operaciones
@@ -71,7 +71,7 @@
 - [ ]  Se debe mostrar un ejemplo de cada uno de los métodos del servicio en el main con los casos de ejecución correcta
   e incorrecta.
 - [ ]  En el main, las salidas deben estar localizadas tanto en fechas como moneda a ESPAÑA.
-- [ ]  Ten en cuenta que lo primero que deberás lanzar y capturar son las notificaciones para que se vaya viendo qué
+- [x]  Ten en cuenta que lo primero que deberás lanzar y capturar son las notificaciones para que se vaya viendo qué
   funcionan.
 
 ### Consulta de datos
@@ -97,7 +97,7 @@ insercción, actualización y borrado que no llame a las notificaciones y testea
 actualización y borrado con actualizaciones y estos no testearlos. Estos métodos llamarán a su método sin notificación y
 si "sucede" lanzará la notificación.*
 
-- [ ]  Se recomienda usar un Logger en todo el proceso.
+- [x]  Se recomienda usar un Logger en todo el proceso.
 
 ### Entrega
 

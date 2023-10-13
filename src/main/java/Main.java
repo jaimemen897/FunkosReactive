@@ -47,14 +47,11 @@ public class Main {
 
         funkoController.numberStitch().subscribe();
 
-
         for (Funko funko: funkoController.getFunkos()) {
             funkoRepository.save(funko).subscribe();
         }
-
-
-
-        funkosService.findById(95L).subscribe(
+        
+        funkosService.findById(80L).subscribe(
                 funkos -> System.out.println("Funko: " + funkos),
                 error -> System.err.println("Error al obtener todos los funkos: " + error.getMessage()),
                 () -> System.out.println("Obtención de funkos completada")
