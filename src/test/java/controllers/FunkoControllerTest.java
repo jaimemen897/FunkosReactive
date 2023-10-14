@@ -5,6 +5,11 @@ import models.Funko;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import services.funkos.FunkosNotificationsImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -17,9 +22,9 @@ class FunkoControllerTest {
     private FunkoController funkoController;
 
     @BeforeEach
-    void setUp() throws Exception {
-        funkoController = FunkoController.getInstance();
-        funkoController.getFunkos().clear();
+    void setUp() {
+        funkoController = FunkoController.getInstance(FunkosNotificationsImpl.getInstance());
+        funkoController.loadCsvWithOutNotify();
     }
 
     @AfterEach
@@ -28,9 +33,7 @@ class FunkoControllerTest {
     }
 
     @Test
-    void loadCsv() throws Exception {
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().block();
-        loadCsv.call();
+    void loadCsvTest() {
         assertAll(
                 () -> assertNotNull(funkoController.getFunkos()),
                 () -> assertEquals(90, funkoController.getFunkos().size())
@@ -38,95 +41,76 @@ class FunkoControllerTest {
     }
 
     @Test
-    void expensiveFunko() throws Exception {
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().block();
-        loadCsv.call();
-        Callable<Funko> expensiveFunko = () -> funkoController.expensiveFunko().block();
-        expensiveFunko.call();
+    void expensiveFunkoTest() {
+        Funko funko = funkoController.expensiveFunko().block();
         assertAll(
-                () -> assertNotNull(funkoController.expensiveFunko()),
-                () -> assertEquals(52.99, funkoController.expensiveFunko().block().getPrecio()),
-                () -> assertEquals("Peaky Blinders Tommy", funkoController.expensiveFunko().block().getNombre())
-
+                () -> assertNotNull(funko),
+                () -> assertEquals(52.99, funko.getPrecio()),
+                () -> assertEquals("Peaky Blinders Tommy", funko.getNombre())
         );
     }
 
     @Test
-    void averagePrice() throws Exception {
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().block();
-        loadCsv.call();
-        Callable<Double> averagePrice = () -> funkoController.averagePrice().block();
-        averagePrice.call();
+    void averagePriceTest() {
+        Double averagePrice = funkoController.averagePrice().block();
         assertAll(
-                () -> assertNotNull(funkoController.averagePrice()),
-                () -> assertEquals(33.51222222222222, funkoController.averagePrice().block())
+                () -> assertNotNull(averagePrice),
+                () -> assertEquals(33.51222222222222, averagePrice)
         );
     }
 
     @Test
-    void groupByModelo() throws Exception {
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().block();
-        loadCsv.call();
-        Callable<Map<Modelo, List<Funko>>> groupByModelo = () -> funkoController.groupByModelo().block();
-        groupByModelo.call();
+    void groupByModeloTest() {
+        Map<Modelo, List<Funko>> groupByModelo = funkoController.groupByModelo().block();
         assertAll(
-                () -> assertNotNull(funkoController.groupByModelo()),
-                () -> assertEquals(4, funkoController.groupByModelo().block().size())
+                () -> assertNotNull(groupByModelo),
+                () -> assertEquals(4, groupByModelo.size()),
+                () -> assertEquals(26, groupByModelo.get(Modelo.MARVEL).size()),
+                () -> assertEquals(23, groupByModelo.get(Modelo.ANIME).size()),
+                () -> assertEquals(26, groupByModelo.get(Modelo.DISNEY).size()),
+                () -> assertEquals(15, groupByModelo.get(Modelo.OTROS).size())
         );
     }
 
     @Test
-    void funkosByModelo() throws Exception {
-        funkoController.loadCsv();
-        Map<Modelo, Long> funkosByModelo = () -> funkoController.funkosByModelo().block();
-        funkosByModelo.call();
+    void funkosByModeloTest() {
+        Map<Modelo, Long> funkosByModelo = funkoController.funkosByModelo().block();
         assertAll(
-                () -> assertNotNull(funkoController.funkosByModelo()),
-                () -> assertEquals(4, funkoController.funkosByModelo().block().size()),
-                () -> assertEquals(26, funkoController.funkosByModelo().block().get(Modelo.MARVEL)),
-                () -> assertEquals(23, funkoController.funkosByModelo().block().get(Modelo.ANIME)),
-                () -> assertEquals(26, funkoController.funkosByModelo().block().get(Modelo.DISNEY)),
-                () -> assertEquals(15, funkoController.funkosByModelo().block().get(Modelo.OTROS))
+                () -> assertNotNull(funkosByModelo),
+                () -> assertEquals(4, funkosByModelo.size()),
+                () -> assertEquals(26, funkosByModelo.get(Modelo.MARVEL)),
+                () -> assertEquals(23, funkosByModelo.get(Modelo.ANIME)),
+                () -> assertEquals(26, funkosByModelo.get(Modelo.DISNEY)),
+                () -> assertEquals(15, funkosByModelo.get(Modelo.OTROS))
         );
     }
 
     @Test
-    void funkosIn2023() throws Exception {
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().block();
-        loadCsv.call();
-        Callable<List<Funko>> funkosIn2023 = () -> funkoController.funkosIn2023().block();
-        funkosIn2023.call();
+    void funkosIn2023Test() {
+        List<Funko> funkosIn2023 = funkoController.funkosIn2023().collectList().block();
         assertAll(
-                () -> assertNotNull(funkoController.funkosIn2023()),
-                () -> assertEquals(57, funkoController.funkosIn2023().block().size()),
-                () -> assertEquals(2023, funkoController.funkosIn2023().block().get(0).getFechaLanzamiento().getYear())
+                () -> assertNotNull(funkosIn2023),
+                () -> assertEquals(57, funkosIn2023.size()),
+                () -> assertEquals(2023, funkosIn2023.get(0).getFechaLanzamiento().getYear())
         );
     }
 
     @Test
-    void numberStitch() throws Exception {
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().block();
-        loadCsv.call();
-        Callable<Double> numberStitch = () -> funkoController.numberStitch().block();
-        numberStitch.call();
+    void numberStitchTest() {
+        Double numberStitch = funkoController.numberStitch().block();
         assertAll(
-                () -> assertNotNull(funkoController.numberStitch()),
-                () -> assertEquals(26, funkoController.numberStitch().block())
+                () -> assertNotNull(numberStitch),
+                () -> assertEquals(26, numberStitch)
         );
     }
 
     @Test
-    void funkoStitch() throws Exception {
-        Callable<List<Funko>> loadCsv = () -> funkoController.loadCsv().block();
-        loadCsv.call();
-        Callable<List<Funko>> funkoStitch = () -> funkoController.funkoStitch().block();
-        funkoStitch.call();
-        var result = funkoController.funkoStitch().block().get(0).getNombre().contains("Stitch");
+    void funkoStitchTest() {
+        List<Funko> funkoStitch = funkoController.funkoStitch().collectList().block();
         assertAll(
-                () -> assertNotNull(funkoController.funkoStitch()),
-                () -> assertEquals(26, funkoController.funkoStitch().block().size()),
-                () -> assertTrue(result)
+                () -> assertNotNull(funkoStitch),
+                () -> assertEquals(26, funkoStitch.size()),
+                () -> assertTrue(funkoStitch.get(0).getNombre().contains("Stitch"))
         );
     }
-}
 }
