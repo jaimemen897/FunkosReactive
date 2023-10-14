@@ -21,7 +21,7 @@ public class FunkosServiceImpl implements FunkosService {
     private FunkosServiceImpl(FunkoRepositoryImpl funkoRepository, FunkosNotifications<Funko> notification) {
         this.funkoRepository = funkoRepository;
         this.cache = new FunkoCacheImpl();
-        this.notification = FunkosNotificationsImpl.getInstance();
+        this.notification = notification;
     }
 
     public static synchronized FunkosServiceImpl getInstance(FunkoRepositoryImpl funkoRepository, FunkosNotifications<Funko> notification) {

@@ -7,7 +7,7 @@ import reactor.core.publisher.FluxSink;
 
 public class FunkosNotificationsImpl implements FunkosNotifications<Funko> {
 
-    private static FunkosNotificationsImpl INSTANCE = new FunkosNotificationsImpl();
+    private static FunkosNotificationsImpl instance = new FunkosNotificationsImpl();
 
     private final Flux<Notificacion<Funko>> funkosNotificationFlux;
     private FluxSink<Notificacion<Funko>> funkosNotification;
@@ -17,10 +17,10 @@ public class FunkosNotificationsImpl implements FunkosNotifications<Funko> {
     }
 
     public static synchronized FunkosNotificationsImpl getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new FunkosNotificationsImpl();
+        if (instance == null) {
+            instance = new FunkosNotificationsImpl();
         }
-        return INSTANCE;
+        return instance;
     }
 
     @Override

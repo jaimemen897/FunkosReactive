@@ -10,12 +10,12 @@ import services.funkos.FunkosServiceImpl;
 
 public class Main {
     public static void main(String[] args) throws NotFoundFile, ErrorInFile {
-        FunkoController funkoController = FunkoController.getInstance();
+        FunkosNotificationsImpl notifications = FunkosNotificationsImpl.getInstance();
+        FunkoController funkoController = FunkoController.getInstance(notifications);
         DataBaseManager dataBaseManager = DataBaseManager.getInstance();
         FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(dataBaseManager);
-        FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository, FunkosNotificationsImpl.getInstance());
+        FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository, notifications);
         Routes routes = Routes.getInstance();
-        FunkosNotificationsImpl notifications = FunkosNotificationsImpl.getInstance();
 
         notifications.getNotificationAsFlux().subscribe(
                 notification -> {
