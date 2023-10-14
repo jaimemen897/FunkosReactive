@@ -5,14 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class FunkoCacheImpl implements FunkoCache {
     private final Logger logger = LoggerFactory.getLogger(FunkoCacheImpl.class);
@@ -44,8 +42,8 @@ public class FunkoCacheImpl implements FunkoCache {
 
     @Override
     public Mono<Funko> get(Long key) {
-            logger.debug("Obteniendo funko de la cache con id:" + key);
-            return Mono.justOrEmpty(cache.get(key));
+        logger.debug("Obteniendo funko de la cache con id:" + key);
+        return Mono.justOrEmpty(cache.get(key));
     }
 
     @Override

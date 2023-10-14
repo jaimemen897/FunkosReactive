@@ -1,35 +1,27 @@
 package repositories.crud;
 
-import exceptions.Funko.FunkoNotFoundException;
-import models.Funko;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
 public interface CrudRepository<T, ID> {
     // Guardar
-    Mono<T> save(T t) throws SQLException;
+    Mono<T> save(T t);
 
     // Actualizar
-    Mono<T> update(T t) throws SQLException, FunkoNotFoundException;
+    Mono<T> update(T t);
 
     // Buscar por ID
-    Mono<T> findById(ID id) throws SQLException;
+    Mono<T> findById(ID id);
 
     // Buscar por nombre
-    Flux<T> findByNombre(String nombre) throws SQLException;
+    Flux<T> findByNombre(String nombre);
 
     // Buscar todos
-    Flux<T> findAll() throws SQLException;
+    Flux<T> findAll();
 
     // Borrar por ID
-    Mono<Boolean> deleteById(ID id) throws SQLException, FunkoNotFoundException, ExecutionException, InterruptedException;
+    Mono<Boolean> deleteById(ID id);
 
     // Borrar todos
-    Mono<Void> deleteAll() throws SQLException;
+    Mono<Void> deleteAll();
 }

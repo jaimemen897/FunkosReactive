@@ -11,7 +11,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import routes.Routes;
 import services.funkos.FunkosNotifications;
-import services.funkos.FunkosNotificationsImpl;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -24,16 +23,17 @@ import java.util.stream.Collectors;
 public class FunkoController {
     private static FunkoController instance;
     private final List<Funko> funkos = new ArrayList<>();
-    private final FunkosNotifications<Funko> notification;
+    private final FunkosNotifications notification;
     private final IdGenerator idGenerator;
     private final Routes routes;
 
-    private FunkoController(FunkosNotifications<Funko> notification) {
+    private FunkoController(FunkosNotifications notification) {
         this.notification = notification;
         idGenerator = IdGenerator.getInstance();
         routes = Routes.getInstance();
     }
-    public static synchronized FunkoController getInstance(FunkosNotifications<Funko> notification) {
+
+    public static synchronized FunkoController getInstance(FunkosNotifications notification) {
         if (instance == null) {
             instance = new FunkoController(notification);
         }

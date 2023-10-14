@@ -5,7 +5,7 @@ import models.Notificacion;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
-public class FunkosNotificationsImpl implements FunkosNotifications<Funko> {
+public class FunkosNotificationsImpl implements FunkosNotifications {
 
     private static FunkosNotificationsImpl instance = new FunkosNotificationsImpl();
 

@@ -18,6 +18,7 @@ import services.database.DataBaseManager;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -62,6 +63,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     public Mono<Funko> update(Funko funko) {
         logger.debug("Actualizando funko: " + funko);
         String query = "UPDATE FUNKOS SET nombre = ?, modelo = ?, precio = ?, fechaLanzamiento = ? WHERE id2 = ?";
+        funko.setUpdatedAt(LocalDateTime.now());
         return Mono.usingWhen(
                 connectionFactory.create(),
                 connection -> Mono.from(connection.createStatement(query)

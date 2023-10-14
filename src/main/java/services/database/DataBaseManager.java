@@ -95,12 +95,8 @@ public class DataBaseManager {
                     String scriptContent;
                     try {
                         try (InputStream inputStream = new FileInputStream(script)) {
-                            if (inputStream == null) {
-                                return Mono.error(new IOException("No se ha encontrado fichero script para inicializar tablas"));
-                            } else {
-                                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                                    scriptContent = reader.lines().collect(Collectors.joining("\n"));
-                                }
+                            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                                scriptContent = reader.lines().collect(Collectors.joining("\n"));
                             }
                         }
                         Statement statement = connection.createStatement(scriptContent);
