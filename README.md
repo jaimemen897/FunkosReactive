@@ -9,7 +9,8 @@
 
 La arquitectura se ha dividido por partes:
 En la carpeta `models` contamos con el apartado de datos, como la clase Funkos , IdGenerator o Notificacion. La parte de
-lógica se encuentra en las carpetas `repositories` y `services`, en las que contamos con clases como **FunkoRepositoryImpl**,
+lógica se encuentra en las carpetas `repositories` y `services`, en las que contamos con clases como *
+*FunkoRepositoryImpl**,
 **FunkoServiceImpl** o **DataBaseManager**. Todas estas se encargan de la parte lógica del
 programa. Tambien contamos con carpetas como `routes` o `exceptions`, estas contienen las rutas y las excepciones usadas
 en el programa.
@@ -20,7 +21,7 @@ En la clase DataBaseManager usamos el driver **R2DBC** para conectarnos a la bas
 *ConnectionFactory**, **ConnectionFactoryOptions** en el que establecemos las opciones de conexión y *
 *ConnectionPoolConfiguration**. Todo esto lo usamos de la siguiente forma:
 
-INSERTAR IMAGEN - databasemanager
+![DataBaseManager](./img/DataBaseManager.png)
 
 También tenemos el método loadResources que se encarga de leer del fichero de propiedades database.properties la URL, el
 usuario, la contraseña y si debemos o no de iniciarlizar las tablas. Para esto haremos uso del método startTables que
@@ -97,7 +98,7 @@ correctos, abrimos la conexión con connectionFactory.create() y ejecutamos la q
 *Sentencia SQL*). Después, con flatMap procesamos los datos que nos devuelve la base de datos y creamos funkos con el
 patrón builder. Al acabar cerramos la conexión con Connection::close
 
-INSERTAR IMAGEN - findAll
+![findAll](./img/findAll.png)
 
 ## FunkoController
 
@@ -130,14 +131,14 @@ notificaciones lo primero y ahora nos irán saltando a medidas que recibamos not
 notificación (NEW, UPDATED, DELETED) imprimiremos un mensaje distinto, y en caso de error lo mostraremos con
 System.err.println.
 
-INSERTAR IMAGEN - notificacion
+![notificacion](./img/notificacion.png)
 
 Después llamamos al método loadCsv de la clase FunkoController para que lea los funkos del csv y los cargue en memoria.
 Posteriormente llamaremos a los métodos de obtención de datos como expensiveFunko y nos subscribiremos.
 
-INSERTAR IMAGEN - filtrardatos
+![filtrardatos](./img/filtrarDatos.png)
 
 Para introducir los datos en la base de datos usaremos el método save de **FunkosService** y lo haremos dentro de un
 bucle for-each. Después ya podemos llamar a los métodos de esta clase como `findById` o `findByNombre` y subscribirnos.
-Para terminar exportaremos los funkos a un Json con exportJson y le pasaremos por parámetro la ruta con la clase *
-*Routes**. Para finalizar el programa usaremos *System.exit(0)* que provocará la salida inmediata.
+Para terminar exportaremos los funkos a un Json con exportJson y le pasaremos por parámetro la ruta con la clase **Routes**.
+Para finalizar el programa usaremos *System.exit(0)* que provocará la salida inmediata.
