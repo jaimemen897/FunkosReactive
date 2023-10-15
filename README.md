@@ -21,7 +21,7 @@ En la clase DataBaseManager usamos el driver **R2DBC** para conectarnos a la bas
 *ConnectionFactory**, **ConnectionFactoryOptions** en el que establecemos las opciones de conexión y *
 *ConnectionPoolConfiguration**. Todo esto lo usamos de la siguiente forma:
 
-![DataBaseManager](./img/DataBaseManager.png)
+![DataBaseManager](./img/databasemanager.png)
 
 También tenemos el método loadResources que se encarga de leer del fichero de propiedades database.properties la URL, el
 usuario, la contraseña y si debemos o no de iniciarlizar las tablas. Para esto haremos uso del método startTables que
