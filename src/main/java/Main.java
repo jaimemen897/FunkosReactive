@@ -83,8 +83,6 @@ public class Main {
         );
 
         funkoRepository.exportJson(routes.getRouteFunkosJson()).subscribe();
-
-        funkosService.exportToJson(routes.getRouteFunkosJson());
         System.exit(0);
     }
 }

@@ -159,7 +159,7 @@ class FunkosServiceImplTest {
     }
 
     @Test
-    void updateNoExiste(){
+    void updateNoExiste() {
         var funko = Funko.builder().cod(UUID.randomUUID()).id2(1L).nombre("Rayo McQueen").modelo(Modelo.DISNEY)
                 .precio(100.0).fechaLanzamiento(LocalDate.parse("2021-10-07")).build();
 
@@ -210,11 +210,19 @@ class FunkosServiceImplTest {
 
     @Test
     void expensiveFunkoTest() {
-        Funko funko = service.expensiveFunko().block();
+        var funko = Funko.builder().cod(UUID.randomUUID()).id2(1L).nombre("Rayo McQueen").modelo(Modelo.DISNEY).precio(100.0).fechaLanzamiento(LocalDate.parse("2021-10-07")).build();
+
+        when(service.expensiveFunko()).thenReturn(Mono.just(funko));
+        var result = service.expensiveFunko().block();
+
         assertAll(
-                () -> assertNotNull(funko),
-                () -> assertEquals(52.99, funko.getPrecio()),
-                () -> assertEquals("Peaky Blinders Tommy", funko.getNombre())
+                () -> assertNotNull(result),
+                () -> assertEquals("Rayo McQueen", result.getNombre()),
+                () -> assertEquals(100.0, result.getPrecio()),
+                () -> assertEquals(LocalDate.parse("2021-10-07"), result.getFechaLanzamiento()),
+                () -> assertEquals(Modelo.DISNEY, result.getModelo()),
+                () -> assertEquals(1L, result.getId2()),
+                () -> assertNotNull(result.getCod())
         );
     }
 

@@ -105,7 +105,6 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     public void importFromCsv() {
-        deleteAll().subscribe();
         funkoController.loadCsv().subscribe(funko -> save(funko).subscribe());
     }
 
