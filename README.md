@@ -9,23 +9,20 @@
 
 La arquitectura se ha dividido por partes:
 En la carpeta `models` contamos con el apartado de datos, como la clase Funkos , IdGenerator o Notificacion. La parte de
-lógica se encuentra en las carpetas `repositories` y `services`, en las que contamos con clases como *
-*FunkoRepositoryImpl**,
+lógica se encuentra en las carpetas `repositories` y `services`, en las que contamos con clases como **FunkoRepositoryImpl**,
 **FunkoServiceImpl** o **DataBaseManager**. Todas estas se encargan de la parte lógica del
 programa. Tambien contamos con carpetas como `routes` o `exceptions`, estas contienen las rutas y las excepciones usadas
 en el programa.
 
 ## DataBase
 
-En la clase DataBaseManager usamos el driver **R2DBC** para conectarnos a la base de datos H2. Para ello usamos *
-*ConnectionFactory**, **ConnectionFactoryOptions** en el que establecemos las opciones de conexión y *
-*ConnectionPoolConfiguration**. Todo esto lo usamos de la siguiente forma:
+En la clase DataBaseManager usamos el driver **R2DBC** para conectarnos a la base de datos H2. Para ello usamos **ConnectionFactory**, **ConnectionFactoryOptions** en el que establecemos las opciones de conexión y **ConnectionPoolConfiguration**. Todo esto lo usamos de la siguiente forma:
 
 ![DataBaseManager](./img/databasemanager.png)
 
 También tenemos el método loadResources que se encarga de leer del fichero de propiedades database.properties la URL, el
 usuario, la contraseña y si debemos o no de iniciarlizar las tablas. Para esto haremos uso del método startTables que
-llamará al método executeScripts y este ejecutará las sentencias SQL de los ficheros *delete.sql* e *init.sql*.
+llamará al método `executeScripts` y este ejecutará las sentencias SQL de los ficheros *delete.sql* e *init.sql*.
 
 ## FunkosService
 
