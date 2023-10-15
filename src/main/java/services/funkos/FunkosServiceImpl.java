@@ -40,7 +40,6 @@ public class FunkosServiceImpl implements FunkosService {
     @Override
     public Flux<Funko> findByNombre(String nombre) {
         return funkoRepository.findByNombre(nombre).flatMap(funko -> cache.put(funko.getId2(), funko).then(Mono.just(funko))).switchIfEmpty(Mono.error(new FunkoNotFoundException("No se ha encontrado ningún funko con el nombre: " + nombre)));
-
     }
 
     @Override
