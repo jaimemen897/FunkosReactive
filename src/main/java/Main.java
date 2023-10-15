@@ -1,7 +1,5 @@
-import controllers.FunkoController;
 import exceptions.File.ErrorInFile;
 import exceptions.File.NotFoundFile;
-import models.Funko;
 import repositories.funkos.FunkoRepositoryImpl;
 import routes.Routes;
 import services.database.DataBaseManager;
@@ -11,7 +9,6 @@ import services.funkos.FunkosServiceImpl;
 public class Main {
     public static void main(String[] args) throws NotFoundFile, ErrorInFile {
         FunkosNotificationsImpl notifications = FunkosNotificationsImpl.getInstance();
-        FunkoController funkoController = FunkoController.getInstance(notifications);
         DataBaseManager dataBaseManager = DataBaseManager.getInstance();
         FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(dataBaseManager);
         FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository, notifications);
@@ -28,53 +25,50 @@ public class Main {
                 error -> System.err.println("Error: " + error.getMessage()),
                 () -> System.out.println("Obtención de funkos completada")
         );
-        funkoController.loadCsv();
 
-        funkoController.expensiveFunko().subscribe(
+        funkosService.importFromCsv();
+
+        funkosService.expensiveFunko().subscribe(
                 funko -> System.out.println("Funko más caro: " + funko),
                 error -> System.err.println("Error al obtener el funko más caro: " + error.getMessage()),
                 () -> System.out.println("Obtención del funko más caro completada")
         );
 
-        funkoController.averagePrice().subscribe(
+        funkosService.averagePrice().subscribe(
                 average -> System.out.println("Precio medio: " + average),
                 error -> System.err.println("Error al obtener el precio medio: " + error.getMessage()),
                 () -> System.out.println("Obtención del precio medio completada")
         );
 
-        funkoController.groupByModelo().subscribe(
+        funkosService.groupByModelo().subscribe(
                 funko -> System.out.println("Funkos agrupados por modelo: " + funko),
                 error -> System.err.println("Error al obtener los funkos agrupados por modelo: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos agrupados por modelo completada")
         );
 
-        funkoController.funkosByModelo().subscribe(
+        funkosService.funkosByModelo().subscribe(
                 funko -> System.out.println("Funkos agrupados por modelo: " + funko),
                 error -> System.err.println("Error al obtener los funkos agrupados por modelo: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos agrupados por modelo completada")
         );
 
-        funkoController.funkosIn2023().collectList().subscribe(
+        funkosService.funkosIn2023().collectList().subscribe(
                 funko -> System.out.println("Funkos que saldrán en 2023: " + funko),
                 error -> System.err.println("Error al obtener los funkos que saldrán en 2023: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos que saldrán en 2023 completada")
         );
 
-        funkoController.funkoStitch().collectList().subscribe(
+        funkosService.funkoStitch().collectList().subscribe(
                 funko -> System.out.println("Funkos de Stitch: " + funko),
                 error -> System.err.println("Error al obtener los funkos de Stitch: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos de Stitch completada")
         );
 
-        funkoController.numberStitch().subscribe(
+        funkosService.numberStitch().subscribe(
                 funko -> System.out.println("Número de funkos de Stitch: " + funko),
                 error -> System.err.println("Error al obtener el número de funkos de Stitch: " + error.getMessage()),
                 () -> System.out.println("Obtención del número de funkos de Stitch completada")
         );
-
-        for (Funko funko : funkoController.getFunkos()) {
-            funkosService.save(funko).subscribe();
-        }
 
         funkosService.findById(80L).subscribe(
                 funkos -> System.out.println("Funko con ID 80: " + funkos),
@@ -90,7 +84,7 @@ public class Main {
 
         funkoRepository.exportJson(routes.getRouteFunkosJson()).subscribe();
 
-
+        funkosService.exportToJson(routes.getRouteFunkosJson());
         System.exit(0);
     }
 }

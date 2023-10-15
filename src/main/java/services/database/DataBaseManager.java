@@ -19,11 +19,11 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 @Getter
 public class DataBaseManager {
     private static DataBaseManager instance;
+    private static boolean initDataBase = false;
     private final Routes routes = Routes.getInstance();
     private final Logger logger = LoggerFactory.getLogger(DataBaseManager.class);
     private final ConnectionFactory connectionFactory;
     private final ConnectionPool pool;
-    private static boolean initDataBase = false;
     private String dbUrl;
     private String dbUser;
     private String dbPassword;

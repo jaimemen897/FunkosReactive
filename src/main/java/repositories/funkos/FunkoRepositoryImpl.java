@@ -194,4 +194,5 @@ public class FunkoRepositoryImpl implements FunkoRepository {
             }
         }));
     }
+
 }

@@ -1,5 +1,7 @@
 package services.funkos;
 
+import controllers.FunkoController;
+import enums.Modelo;
 import enums.Tipo;
 import exceptions.Funko.FunkoNotFoundException;
 import models.Funko;
@@ -8,21 +10,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import repositories.funkos.FunkoRepository;
 import repositories.funkos.FunkoRepositoryImpl;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FunkosServiceImpl implements FunkosService {
 
     private static FunkosServiceImpl instance;
     private final FunkoCache cache;
     private final Logger logger = LoggerFactory.getLogger(FunkosServiceImpl.class);
-    private final FunkoRepository funkoRepository;
+    private final FunkoRepositoryImpl funkoRepository;
     private final FunkosNotifications notification;
+    private final FunkoController funkoController = FunkoController.getInstance();
+
 
     private FunkosServiceImpl(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
         this.funkoRepository = funkoRepository;
         this.cache = new FunkoCacheImpl();
         this.notification = notification;
+
     }
 
     public static synchronized FunkosServiceImpl getInstance(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
@@ -89,5 +98,63 @@ public class FunkosServiceImpl implements FunkosService {
         logger.debug("Eliminando todos los funkos");
         cache.clear();
         return funkoRepository.deleteAll().then(Mono.empty());
+    }
+
+    public void exportToJson(String ruta) {
+        funkoRepository.exportJson(ruta).subscribe();
+    }
+
+    public void importFromCsv() {
+        deleteAll().subscribe();
+        funkoController.loadCsv().subscribe(funko -> save(funko).subscribe());
+    }
+
+    public Mono<Funko> expensiveFunko() {
+        return findAll()
+                .collectList()
+                .mapNotNull(funkoList -> funkoList.stream().max(Comparator.comparingDouble(Funko::getPrecio)).orElse(null))
+                .flatMap(Mono::justOrEmpty);
+    }
+
+    public Mono<Double> averagePrice() {
+        return findAll()
+                .collectList()
+                .mapNotNull(funkoList -> funkoList.stream().mapToDouble(Funko::getPrecio).average().orElse(0.0))
+                .flatMap(Mono::justOrEmpty);
+    }
+
+    public Mono<Map<Modelo, List<Funko>>> groupByModelo() {
+        return findAll()
+                .collectList()
+                .mapNotNull(funkoList -> funkoList.stream().collect(Collectors.groupingBy(Funko::getModelo)))
+                .flatMap(Mono::justOrEmpty);
+    }
+
+    public Mono<Map<Modelo, Long>> funkosByModelo() {
+        return findAll()
+                .collectList()
+                .mapNotNull(funkoList -> funkoList.stream().collect(Collectors.groupingBy(Funko::getModelo, Collectors.counting())))
+                .flatMap(Mono::justOrEmpty);
+    }
+
+    public Flux<Funko> funkosIn2023() {
+        return findAll()
+                .collectList()
+                .mapNotNull(funkoList -> funkoList.stream().filter(funko -> funko.getFechaLanzamiento().getYear() == 2023).toList())
+                .flatMapMany(Flux::fromIterable);
+    }
+
+    public Mono<Double> numberStitch() {
+        return findAll()
+                .collectList()
+                .mapNotNull(funkoList -> (double) funkoList.stream().filter(funko -> funko.getNombre().contains("Stitch")).count())
+                .flatMap(Mono::justOrEmpty);
+    }
+
+    public Flux<Funko> funkoStitch() {
+        return findAll()
+                .collectList()
+                .mapNotNull(funkoList -> funkoList.stream().filter(funko -> funko.getNombre().contains("Stitch")).toList())
+                .flatMapMany(Flux::fromIterable);
     }
 }
