@@ -84,7 +84,7 @@ public class Main {
                 () -> System.out.println("Obtención de funkos completada")
         );
 
-        funkoRepository.exportJson(routes.getRouteFunkosJson()).subscribe();
+        funkoController.exportJson(routes.getRouteFunkosJson());
         System.exit(0);
     }
 }

@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FunkoStorageTest {
-    FunkoStorage funkoStorage;
+    FunkoStorageImpl funkoStorage;
 
     @BeforeEach
     void setUp() {
-        funkoStorage = FunkoStorage.getInstance();
+        funkoStorage = FunkoStorageImpl.getInstance();
     }
 
     @Test

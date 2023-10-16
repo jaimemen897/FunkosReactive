@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import services.database.DataBaseManager;
-import services.funkos.FunkoStorage;
+import services.funkos.FunkoStorageImpl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     private static FunkoRepositoryImpl instance;
     private final Logger logger = LoggerFactory.getLogger(FunkoRepositoryImpl.class);
     private final ConnectionPool connectionFactory;
-    private final FunkoStorage funkoStorage = FunkoStorage.getInstance();
+    private final FunkoStorageImpl funkoStorage = FunkoStorageImpl.getInstance();
 
     private FunkoRepositoryImpl(DataBaseManager db) {
         this.connectionFactory = db.getConnectionPool();

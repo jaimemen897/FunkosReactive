@@ -23,7 +23,7 @@ public class FunkosServiceImpl implements FunkosService {
     private final Logger logger = LoggerFactory.getLogger(FunkosServiceImpl.class);
     private final FunkoRepositoryImpl funkoRepository;
     private final FunkosNotifications notification;
-    private final FunkoStorage funkoStorage = FunkoStorage.getInstance();
+    private final FunkoStorageImpl funkoStorage = FunkoStorageImpl.getInstance();
 
 
     private FunkosServiceImpl(FunkoRepositoryImpl funkoRepository, FunkosNotifications notification) {
@@ -100,6 +100,7 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     public void exportToJson(String ruta) {
+        funkoRepository.deleteAll().subscribe();
         funkoRepository.exportJson(ruta).subscribe();
     }
 
