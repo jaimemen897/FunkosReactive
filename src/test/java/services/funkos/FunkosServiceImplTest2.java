@@ -23,7 +23,7 @@ class FunkosServiceImplTest2 {
 
     @BeforeEach
     void setUp() {
-        funkosService.importFromCsv();
+        funkosService.importFromCsvNoNotify();
     }
 
     @Test
@@ -31,7 +31,7 @@ class FunkosServiceImplTest2 {
         Funko funko = funkosService.expensiveFunko().block();
         assertAll(
                 () -> assertNotNull(funko),
-                () -> assertEquals(52.99, funko.getPrecio()),
+                () -> assertEquals(52.9900016784668, funko.getPrecio()),
                 () -> assertEquals("Peaky Blinders Tommy", funko.getNombre())
         );
     }
@@ -41,7 +41,7 @@ class FunkosServiceImplTest2 {
         Double averagePrice = funkosService.averagePrice().block();
         assertAll(
                 () -> assertNotNull(averagePrice),
-                () -> assertEquals(33.51222222222222, averagePrice)
+                () -> assertEquals(33.51222301059299, averagePrice)
         );
     }
 

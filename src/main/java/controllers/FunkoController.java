@@ -20,7 +20,6 @@ import java.util.UUID;
 public class FunkoController {
     private static FunkoController instance;
     private final IdGenerator idGenerator;
-    private List<Funko> funkosList;
     private final Routes routes;
 
     private FunkoController() {
@@ -36,34 +35,32 @@ public class FunkoController {
     }
 
     public Flux<Funko> loadCsv() {
-        funkosList = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(routes.getRouteFunkosCsv()))) {
-            String line = br.readLine();
-            line = br.readLine();
-            while (line != null) {
-                String[] split = line.split(",");
+        return Flux.using(
+                () -> new BufferedReader(new FileReader(routes.getRouteFunkosCsv())),
+                br -> Flux.fromStream(br.lines().skip(1).map(line -> {
+                    String[] split = line.split(",");
 
-                int year = Integer.parseInt(split[4].split("-")[0]);
-                int month = Integer.parseInt(split[4].split("-")[1]);
-                int day = Integer.parseInt(split[4].split("-")[2]);
+                    int year = Integer.parseInt(split[4].split("-")[0]);
+                    int month = Integer.parseInt(split[4].split("-")[1]);
+                    int day = Integer.parseInt(split[4].split("-")[2]);
 
-                LocalDate dia = LocalDate.of(year, month, day);
-                UUID cod = UUID.fromString(split[0].substring(0, 35));
+                    LocalDate dia = LocalDate.of(year, month, day);
+                    UUID cod = UUID.fromString(split[0].substring(0, 35));
 
-                funkosList.add(Funko.builder()
-                        .cod(cod)
-                        .id2(idGenerator.getAndIncrement())
-                        .nombre(split[1])
-                        .modelo(Modelo.valueOf(split[2]))
-                        .precio(Double.parseDouble(split[3]))
-                        .fechaLanzamiento(dia)
-                        .build());
-
-                line = br.readLine();
-            }
-        } catch (IOException e) {
-            throw new NotFoundFile("No se ha encontrado el archivo");
-        }
-        return Flux.fromIterable(funkosList);
+                    return Funko.builder()
+                            .cod(cod)
+                            .id2(idGenerator.getAndIncrement())
+                            .nombre(split[1]).modelo(Modelo.valueOf(split[2]))
+                            .precio(Double.parseDouble(split[3]))
+                            .fechaLanzamiento(dia)
+                            .build();
+                })),
+                reader -> {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        throw new NotFoundFile("No se ha encontrado el archivo");
+                    }
+                });
     }
 }

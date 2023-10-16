@@ -105,7 +105,13 @@ public class FunkosServiceImpl implements FunkosService {
     }
 
     public void importFromCsv() {
+        funkoRepository.deleteAll().subscribe();
         funkoController.loadCsv().subscribe(funko -> save(funko).subscribe());
+    }
+
+    public void importFromCsvNoNotify() {
+        funkoRepository.deleteAll().subscribe();
+        funkoController.loadCsv().subscribe(funko -> saveWithNoNotifications(funko).subscribe());
     }
 
     public Mono<Funko> expensiveFunko() {
