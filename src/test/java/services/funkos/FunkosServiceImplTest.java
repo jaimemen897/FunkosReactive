@@ -14,6 +14,7 @@ import repositories.funkos.FunkoRepositoryImpl;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +24,9 @@ import static org.mockito.Mockito.*;
 class FunkosServiceImplTest {
     @Mock
     FunkoRepositoryImpl repository;
+
+    @Mock
+    FunkoStorage storage;
 
     @Mock
     FunkosNotifications notifications;
@@ -158,7 +162,7 @@ class FunkosServiceImplTest {
     }
 
     @Test
-    void updateNoExiste(){
+    void updateNoExiste() {
         var funko = Funko.builder().cod(UUID.randomUUID()).id2(1L).nombre("Rayo McQueen").modelo(Modelo.DISNEY)
                 .precio(100.0).fechaLanzamiento(LocalDate.parse("2021-10-07")).build();
 

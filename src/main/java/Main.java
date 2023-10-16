@@ -1,7 +1,6 @@
 import controllers.FunkoController;
 import exceptions.File.ErrorInFile;
 import exceptions.File.NotFoundFile;
-import models.Funko;
 import repositories.funkos.FunkoRepositoryImpl;
 import routes.Routes;
 import services.database.DataBaseManager;
@@ -11,10 +10,10 @@ import services.funkos.FunkosServiceImpl;
 public class Main {
     public static void main(String[] args) throws NotFoundFile, ErrorInFile {
         FunkosNotificationsImpl notifications = FunkosNotificationsImpl.getInstance();
-        FunkoController funkoController = FunkoController.getInstance(notifications);
         DataBaseManager dataBaseManager = DataBaseManager.getInstance();
         FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(dataBaseManager);
         FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository, notifications);
+        FunkoController funkoController = FunkoController.getInstance();
         Routes routes = Routes.getInstance();
 
         notifications.getNotificationAsFlux().subscribe(
@@ -28,6 +27,7 @@ public class Main {
                 error -> System.err.println("Error: " + error.getMessage()),
                 () -> System.out.println("Obtención de funkos completada")
         );
+
         funkoController.loadCsv();
 
         funkoController.expensiveFunko().subscribe(
@@ -72,10 +72,6 @@ public class Main {
                 () -> System.out.println("Obtención del número de funkos de Stitch completada")
         );
 
-        for (Funko funko : funkoController.getFunkos()) {
-            funkosService.save(funko).subscribe();
-        }
-
         funkosService.findById(80L).subscribe(
                 funkos -> System.out.println("Funko con ID 80: " + funkos),
                 error -> System.err.println("Error al obtener todos los funkos: " + error.getMessage()),
@@ -89,8 +85,6 @@ public class Main {
         );
 
         funkoRepository.exportJson(routes.getRouteFunkosJson()).subscribe();
-
-
         System.exit(0);
     }
 }
