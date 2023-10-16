@@ -1,10 +1,6 @@
 package repositories.funkos;
 
-import adapters.LocalDateAdapter;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import enums.Modelo;
-import exceptions.File.ErrorInFile;
 import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.Result;
@@ -14,19 +10,17 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import services.database.DataBaseManager;
+import services.funkos.FunkoStorage;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class FunkoRepositoryImpl implements FunkoRepository {
     private static FunkoRepositoryImpl instance;
     private final Logger logger = LoggerFactory.getLogger(FunkoRepositoryImpl.class);
     private final ConnectionPool connectionFactory;
+    private final FunkoStorage funkoStorage = FunkoStorage.getInstance();
 
     private FunkoRepositoryImpl(DataBaseManager db) {
         this.connectionFactory = db.getConnectionPool();
@@ -177,22 +171,7 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     public Mono<Void> exportJson(String ruta) {
-        logger.debug("Exportando funkos a JSON, ruta: " + ruta);
-        List<Funko> funkos = new ArrayList<>();
-
-        findAll().subscribe(funkos::add);
-
-        return Mono.fromRunnable((() -> {
-            GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(Funko.class, new LocalDateAdapter());
-            Gson gson = gsonBuilder.setPrettyPrinting().create();
-
-            try (FileWriter writer = new FileWriter(ruta)) {
-                gson.toJson(funkos, writer);
-            } catch (IOException e) {
-                throw new ErrorInFile("Error al escribir en el archivo JSON: " + e.getMessage());
-            }
-        }));
+        return funkoStorage.exportJson(ruta);
     }
 
 }

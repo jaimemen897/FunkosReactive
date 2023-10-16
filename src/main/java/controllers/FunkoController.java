@@ -1,26 +1,29 @@
 package controllers;
 
 import enums.Modelo;
-import exceptions.File.NotFoundFile;
 import lombok.Getter;
 import models.Funko;
 import models.IdGenerator;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import repositories.funkos.FunkoRepositoryImpl;
 import routes.Routes;
+import services.database.DataBaseManager;
+import services.funkos.FunkosNotifications;
+import services.funkos.FunkosNotificationsImpl;
+import services.funkos.FunkosServiceImpl;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 @Getter
 public class FunkoController {
     private static FunkoController instance;
     private final IdGenerator idGenerator;
     private final Routes routes;
+    private final FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(DataBaseManager.getInstance());
+    private final FunkosNotifications notification = FunkosNotificationsImpl.getInstance();
+    private final FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository, notification);
 
     private FunkoController() {
         idGenerator = IdGenerator.getInstance();
@@ -34,33 +37,39 @@ public class FunkoController {
         return instance;
     }
 
-    public Flux<Funko> loadCsv() {
-        return Flux.using(
-                () -> new BufferedReader(new FileReader(routes.getRouteFunkosCsv())),
-                br -> Flux.fromStream(br.lines().skip(1).map(line -> {
-                    String[] split = line.split(",");
+    public void loadCsv() {
+        funkosService.importFromCsv();
+    }
 
-                    int year = Integer.parseInt(split[4].split("-")[0]);
-                    int month = Integer.parseInt(split[4].split("-")[1]);
-                    int day = Integer.parseInt(split[4].split("-")[2]);
+    public void exportJson(String ruta) {
+        funkosService.exportToJson(ruta);
+    }
 
-                    LocalDate dia = LocalDate.of(year, month, day);
-                    UUID cod = UUID.fromString(split[0].substring(0, 35));
+    public Mono<Funko> expensiveFunko() {
+        return funkosService.expensiveFunko();
+    }
 
-                    return Funko.builder()
-                            .cod(cod)
-                            .id2(idGenerator.getAndIncrement())
-                            .nombre(split[1]).modelo(Modelo.valueOf(split[2]))
-                            .precio(Double.parseDouble(split[3]))
-                            .fechaLanzamiento(dia)
-                            .build();
-                })),
-                reader -> {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        throw new NotFoundFile("No se ha encontrado el archivo");
-                    }
-                });
+    public Mono<Double> averagePrice() {
+        return funkosService.averagePrice();
+    }
+
+    public Mono<Map<Modelo, List<Funko>>> groupByModelo() {
+        return funkosService.groupByModelo();
+    }
+
+    public Mono<Map<Modelo, Long>> funkosByModelo() {
+        return funkosService.funkosByModelo();
+    }
+
+    public Flux<Funko> funkosIn2023() {
+        return funkosService.funkosIn2023();
+    }
+
+    public Mono<Double> numberStitch() {
+        return funkosService.numberStitch();
+    }
+
+    public Flux<Funko> funkoStitch() {
+        return funkosService.funkoStitch();
     }
 }

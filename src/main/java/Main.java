@@ -1,3 +1,4 @@
+import controllers.FunkoController;
 import exceptions.File.ErrorInFile;
 import exceptions.File.NotFoundFile;
 import repositories.funkos.FunkoRepositoryImpl;
@@ -12,6 +13,7 @@ public class Main {
         DataBaseManager dataBaseManager = DataBaseManager.getInstance();
         FunkoRepositoryImpl funkoRepository = FunkoRepositoryImpl.getInstance(dataBaseManager);
         FunkosServiceImpl funkosService = FunkosServiceImpl.getInstance(funkoRepository, notifications);
+        FunkoController funkoController = FunkoController.getInstance();
         Routes routes = Routes.getInstance();
 
         notifications.getNotificationAsFlux().subscribe(
@@ -26,45 +28,45 @@ public class Main {
                 () -> System.out.println("Obtención de funkos completada")
         );
 
-        funkosService.importFromCsv();
+        funkoController.loadCsv();
 
-        funkosService.expensiveFunko().subscribe(
+        funkoController.expensiveFunko().subscribe(
                 funko -> System.out.println("Funko más caro: " + funko),
                 error -> System.err.println("Error al obtener el funko más caro: " + error.getMessage()),
                 () -> System.out.println("Obtención del funko más caro completada")
         );
 
-        funkosService.averagePrice().subscribe(
+        funkoController.averagePrice().subscribe(
                 average -> System.out.println("Precio medio: " + average),
                 error -> System.err.println("Error al obtener el precio medio: " + error.getMessage()),
                 () -> System.out.println("Obtención del precio medio completada")
         );
 
-        funkosService.groupByModelo().subscribe(
+        funkoController.groupByModelo().subscribe(
                 funko -> System.out.println("Funkos agrupados por modelo: " + funko),
                 error -> System.err.println("Error al obtener los funkos agrupados por modelo: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos agrupados por modelo completada")
         );
 
-        funkosService.funkosByModelo().subscribe(
+        funkoController.funkosByModelo().subscribe(
                 funko -> System.out.println("Funkos agrupados por modelo: " + funko),
                 error -> System.err.println("Error al obtener los funkos agrupados por modelo: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos agrupados por modelo completada")
         );
 
-        funkosService.funkosIn2023().collectList().subscribe(
+        funkoController.funkosIn2023().collectList().subscribe(
                 funko -> System.out.println("Funkos que saldrán en 2023: " + funko),
                 error -> System.err.println("Error al obtener los funkos que saldrán en 2023: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos que saldrán en 2023 completada")
         );
 
-        funkosService.funkoStitch().collectList().subscribe(
+        funkoController.funkoStitch().collectList().subscribe(
                 funko -> System.out.println("Funkos de Stitch: " + funko),
                 error -> System.err.println("Error al obtener los funkos de Stitch: " + error.getMessage()),
                 () -> System.out.println("Obtención de los funkos de Stitch completada")
         );
 
-        funkosService.numberStitch().subscribe(
+        funkoController.numberStitch().subscribe(
                 funko -> System.out.println("Número de funkos de Stitch: " + funko),
                 error -> System.err.println("Error al obtener el número de funkos de Stitch: " + error.getMessage()),
                 () -> System.out.println("Obtención del número de funkos de Stitch completada")
