@@ -173,5 +173,4 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     public Mono<Void> exportJson(String ruta) {
         return funkoStorage.exportJson(ruta);
     }
-
 }

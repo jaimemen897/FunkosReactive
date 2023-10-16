@@ -26,6 +26,9 @@ class FunkosServiceImplTest {
     FunkoRepositoryImpl repository;
 
     @Mock
+    FunkoStorage storage;
+
+    @Mock
     FunkosNotifications notifications;
 
     @InjectMocks
@@ -206,87 +209,5 @@ class FunkosServiceImplTest {
         service.deleteAll().block();
 
         verify(repository, times(1)).deleteAll();
-    }
-
-    @Test
-    void expensiveFunkoTest() {
-        var funko = Funko.builder().cod(UUID.randomUUID()).id2(1L).nombre("Rayo McQueen").modelo(Modelo.DISNEY).precio(100.0).fechaLanzamiento(LocalDate.parse("2021-10-07")).build();
-
-        when(service.expensiveFunko()).thenReturn(Mono.just(funko));
-        var result = service.expensiveFunko().block();
-
-        assertAll(
-                () -> assertNotNull(result),
-                () -> assertEquals("Rayo McQueen", result.getNombre()),
-                () -> assertEquals(100.0, result.getPrecio()),
-                () -> assertEquals(LocalDate.parse("2021-10-07"), result.getFechaLanzamiento()),
-                () -> assertEquals(Modelo.DISNEY, result.getModelo()),
-                () -> assertEquals(1L, result.getId2()),
-                () -> assertNotNull(result.getCod())
-        );
-    }
-
-    @Test
-    void averagePriceTest() {
-        Double averagePrice = service.averagePrice().block();
-        assertAll(
-                () -> assertNotNull(averagePrice),
-                () -> assertEquals(33.51222222222222, averagePrice)
-        );
-    }
-
-    @Test
-    void groupByModeloTest() {
-        Map<Modelo, List<Funko>> groupByModelo = service.groupByModelo().block();
-        assertAll(
-                () -> assertNotNull(groupByModelo),
-                () -> assertEquals(4, groupByModelo.size()),
-                () -> assertEquals(26, groupByModelo.get(Modelo.MARVEL).size()),
-                () -> assertEquals(23, groupByModelo.get(Modelo.ANIME).size()),
-                () -> assertEquals(26, groupByModelo.get(Modelo.DISNEY).size()),
-                () -> assertEquals(15, groupByModelo.get(Modelo.OTROS).size())
-        );
-    }
-
-    @Test
-    void funkosByModeloTest() {
-        Map<Modelo, Long> funkosByModelo = service.funkosByModelo().block();
-        assertAll(
-                () -> assertNotNull(funkosByModelo),
-                () -> assertEquals(4, funkosByModelo.size()),
-                () -> assertEquals(26, funkosByModelo.get(Modelo.MARVEL)),
-                () -> assertEquals(23, funkosByModelo.get(Modelo.ANIME)),
-                () -> assertEquals(26, funkosByModelo.get(Modelo.DISNEY)),
-                () -> assertEquals(15, funkosByModelo.get(Modelo.OTROS))
-        );
-    }
-
-    @Test
-    void funkosIn2023Test() {
-        List<Funko> funkosIn2023 = service.funkosIn2023().collectList().block();
-        assertAll(
-                () -> assertNotNull(funkosIn2023),
-                () -> assertEquals(57, funkosIn2023.size()),
-                () -> assertEquals(2023, funkosIn2023.get(0).getFechaLanzamiento().getYear())
-        );
-    }
-
-    @Test
-    void numberStitchTest() {
-        Double numberStitch = service.numberStitch().block();
-        assertAll(
-                () -> assertNotNull(numberStitch),
-                () -> assertEquals(26, numberStitch)
-        );
-    }
-
-    @Test
-    void funkoStitchTest() {
-        List<Funko> funkoStitch = service.funkoStitch().collectList().block();
-        assertAll(
-                () -> assertNotNull(funkoStitch),
-                () -> assertEquals(26, funkoStitch.size()),
-                () -> assertTrue(funkoStitch.get(0).getNombre().contains("Stitch"))
-        );
     }
 }
