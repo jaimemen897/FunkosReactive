@@ -42,3 +42,7 @@ bin/
 .DS_Store
 .idea
 .idea/
+/database.mv.db
+/database.trace.db
+/src/data/funkos.json
+/h2/database.trace.db
